@@ -26,11 +26,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!--<com.example.pants.tooldemo.tool.tool_2.music.MusicListViewContainer-->
-            <!--android:id="@+id/container"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--/>-->
+        <com.example.chen.tooldemos.tools2.tools2.music.MusicListViewContainer
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/container"/>
 
     </ScrollView>
 
