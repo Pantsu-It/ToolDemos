@@ -267,6 +267,9 @@ public class AudioView extends FrameLayout {
 
         private Bitmap imageBitmap;
 
+        private Matrix rotateMatrix = new Matrix();
+        private float rotate = 0;
+
         public Cover(Context context) {
             super(context);
         }
@@ -274,11 +277,10 @@ public class AudioView extends FrameLayout {
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
-
-
         }
 
-        public void rotate() {
+        public void setRotate() {
+            rotateMatrix.setRotate(rotate, rectInner.centerX(), rectInner.centerX());
 
         }
 
