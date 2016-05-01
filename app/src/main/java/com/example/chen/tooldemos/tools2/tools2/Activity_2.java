@@ -9,15 +9,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.media.audiofx.Visualizer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.chen.tooldemos.R;
 import com.example.chen.tooldemos.tools2.tools2.music.Music;
 import com.example.chen.tooldemos.tools2.tools2.music.MusicListViewContainer;
 import com.example.chen.tooldemos.tools2.tools2.music.MusicProvider;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,11 +65,19 @@ public class Activity_2 extends Activity {
 
     //界面按钮
     private TextView playBtn, pauseBtn, nextBtn, previousBtn, stopBtn;
+    private SeekBar musicProgress;
+    private TextView tv_current,tv_duration,tv_musictitle;
+
 
     //唱片
     private AudioView mAudioView;
 
     private DisplayMetrics mMetrics;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -76,6 +89,10 @@ public class Activity_2 extends Activity {
         pauseBtn = (TextView) findViewById(R.id.btn_pause);
         nextBtn = (TextView) findViewById(R.id.btn_next);
         previousBtn = (TextView) findViewById(R.id.btn_previous);
+        musicProgress = (SeekBar) findViewById(R.id.sb_musicbar);
+        tv_current = (TextView) findViewById(R.id.tv_current);
+        tv_duration = (TextView) findViewById(R.id.tv_duration);
+        tv_musictitle = (TextView) findViewById(R.id.tv_title);
 
 
         musicProvider = new MusicProvider(this);
@@ -93,6 +110,9 @@ public class Activity_2 extends Activity {
         }
         setupVisualizer();
         setupAudioView();
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     // don't do long-time task in UI-Thread~
@@ -174,20 +194,83 @@ public class Activity_2 extends Activity {
         }
     }
 
+    public String formatTime(long time) {
+        String min = time / (1000 * 60) + "";
+        String sec = time % (1000 * 60) + "";
+        if (min.length() < 2) {
+            min = "0" + time / (1000 * 60) + "";
+        } else {
+            min = time / (1000 * 60) + "";
+        }
+        if (sec.length() == 4) {
+            sec = "0" + (time % (1000 * 60)) + "";
+        } else if (sec.length() == 3) {
+            sec = "00" + (time % (1000 * 60)) + "";
+        } else if (sec.length() == 2) {
+            sec = "000" + (time % (1000 * 60)) + "";
+        } else if (sec.length() == 1) {
+            sec = "0000" + (time % (1000 * 60)) + "";
+        }
+        return min + ":" + sec.trim().substring(0, 2);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Activity_2 Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.example.chen.tooldemos.tools2.tools2/http/host/path")
+        );
+        AppIndex.AppIndexApi.start(client, viewAction);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Activity_2 Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.example.chen.tooldemos.tools2.tools2/http/host/path")
+        );
+        AppIndex.AppIndexApi.end(client, viewAction);
+        client.disconnect();
+    }
+
     //广播接收类PlayerReciever
-    class PlayerReceiver extends BroadcastReceiver{
+    class PlayerReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            if(action.equalsIgnoreCase(MUSIC_CURRENT)){
+            if (action.equalsIgnoreCase(MUSIC_CURRENT)) {
                 currentTime = intent.getIntExtra("currentTime", -1);
-
-            }else if(action.equals(MUSIC_DURATION)){
-                duration = intent.getIntExtra("duration",-1);
-            }else if(action.equals(UPDATE_ACTION)){
-                position = intent.getIntExtra("current" , -1);
+                musicProgress.setProgress(currentTime);
+                tv_current.setText(formatTime(currentTime));
+            } else if (action.equals(MUSIC_DURATION)) {
+                duration = intent.getIntExtra("duration", -1);
+                musicProgress.setMax((int) duration);
+            } else if (action.equals(UPDATE_ACTION)) {
+                position = intent.getIntExtra("current", -1);
                 path = musics.get(position).getPath();
+                tv_musictitle.setText(musics.get(position).getTitle());
             }
         }
     }
