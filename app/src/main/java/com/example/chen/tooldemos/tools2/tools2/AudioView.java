@@ -24,6 +24,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 
 import com.example.chen.tooldemos.R;
@@ -139,8 +140,10 @@ public class AudioView extends FrameLayout {
             case MotionEvent.ACTION_DOWN:
                 if (mediaPlayer.isPlaying()) {
                     mediaPlayer.pause();
+                    mCover.stopRotate();
                 } else {
                     mediaPlayer.start();
+                    mCover.startRotate();
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -269,14 +272,11 @@ public class AudioView extends FrameLayout {
 
     class Cover extends View {
 
-        //        private Bitmap imageBitmap;
-//        private float rotate = 0f;
         private Matrix rotateMatrix = new Matrix();
+        private float mRotate = 0f;
 
         public Cover(Context context) {
             super(context);
-
-            startRotate();
         }
 
         @Override
@@ -292,7 +292,11 @@ public class AudioView extends FrameLayout {
         public void startRotate() {
             stopRotate();
 
-            animator = ValueAnimator.ofFloat(0, 360).setDuration(10000);
+            animator = ValueAnimator.ofFloat(mRotate, mRotate + 360);
+            animator.setInterpolator(new LinearInterpolator());
+            animator.setDuration(10000);
+            animator.setRepeatCount(Animation.INFINITE);
+            animator.setRepeatMode(Animation.RESTART);
             animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
@@ -308,12 +312,12 @@ public class AudioView extends FrameLayout {
             // started ? running?
             if (animator != null && animator.isStarted())
                 animator.cancel();
-//                animator.end();
         }
 
 
         public void setRotate(float rotate) {
             rotateMatrix.setRotate(rotate, rectInner.centerX(), rectInner.centerX());
+            mRotate = rotate;
             invalidate();
         }
 
