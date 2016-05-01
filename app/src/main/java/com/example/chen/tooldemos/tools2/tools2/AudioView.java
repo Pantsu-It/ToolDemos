@@ -5,6 +5,7 @@ package com.example.chen.tooldemos.tools2.tools2;
  */
 
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,9 +18,12 @@ import android.media.MediaPlayer;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 
 import com.example.chen.tooldemos.R;
@@ -31,6 +35,7 @@ import java.io.InputStream;
  */
 public class AudioView extends FrameLayout {
 
+    private final Context mContext;
     private byte[] bytes;
     private Paint paint = new Paint();
     private Path path = new Path();
@@ -50,14 +55,13 @@ public class AudioView extends FrameLayout {
     private RectF rect = new RectF(), rectLinesCrop = new RectF();
     private RectF rectInner = new RectF(), rectA = new RectF(), rectB = new RectF();
 
-    private int color_border_a = 0x33666666, color_border_b = 0x66333333;
+    private int color_border_a = 0x99666666, color_border_b = 0x66333333;
 
     private BorderInner mBorderInner;
     private BorderOuter mBorderOuter;
     private FFTLines mFFTLines;
     private Cover mCover;
 
-    //lalal
     //background: 249,248,246
 
     public AudioView(Context context) {
@@ -70,11 +74,15 @@ public class AudioView extends FrameLayout {
 
     public AudioView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        mContext = context;
 
         mBorderInner = new BorderInner(context);
         mBorderOuter = new BorderOuter(context);
         mFFTLines = new FFTLines(context);
         mCover = new Cover(context);
+
+        paint.setAntiAlias(true);
+        paint.setDither(true);
 
         setDefaultCover();
     }
@@ -159,7 +167,6 @@ public class AudioView extends FrameLayout {
 
         RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(null, bitmap);
         cover = roundedBitmapDrawable.getBitmap();
-        mCover.setImageBitmap(cover);
     }
 
     public void setMediaPlayer(MediaPlayer mediaPlayer) {
@@ -195,8 +202,6 @@ public class AudioView extends FrameLayout {
             }
             // draw lines
             paint.setStyle(Paint.Style.STROKE);
-            paint.setDither(true);
-            paint.setAntiAlias(true);
             paint.setColor(color_line);
             paint.setStrokeWidth(lineWidth);
 
@@ -242,7 +247,6 @@ public class AudioView extends FrameLayout {
             paint.setStyle(Paint.Style.FILL);
             paint.setColor(color_border_b);
 
-            // draw outer_border with alpha-gray: 124,123,121
             canvas.drawOval(rectB, paint);
         }
 
@@ -259,34 +263,59 @@ public class AudioView extends FrameLayout {
             paint.setStyle(Paint.Style.FILL);
             paint.setColor(color_border_a);
 
-            // draw inner_border with alpha-gray: 150,149,147
             canvas.drawOval(rectA, paint);
         }
     }
 
     class Cover extends View {
 
-        private Bitmap imageBitmap;
-
+        //        private Bitmap imageBitmap;
+//        private float rotate = 0f;
         private Matrix rotateMatrix = new Matrix();
-        private float rotate = 0;
 
         public Cover(Context context) {
             super(context);
+
+            startRotate();
         }
 
         @Override
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
+            paint.setColor(0xffffffff);
+
+            canvas.drawBitmap(cover, rotateMatrix, paint);
         }
 
-        public void setRotate() {
+        ValueAnimator animator;
+
+        public void startRotate() {
+            stopRotate();
+
+            animator = ValueAnimator.ofFloat(0, 360).setDuration(10000);
+            animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    float rotate = (float) animation.getAnimatedValue();
+                    setRotate(rotate);
+                    Log.d("rotate", String.valueOf(rotate));
+                }
+            });
+            animator.start();
+        }
+
+        public void stopRotate() {
+            // started ? running?
+            if (animator != null && animator.isStarted())
+                animator.cancel();
+//                animator.end();
+        }
+
+
+        public void setRotate(float rotate) {
             rotateMatrix.setRotate(rotate, rectInner.centerX(), rectInner.centerX());
-
+            invalidate();
         }
 
-        public void setImageBitmap(Bitmap imageBitmap) {
-            this.imageBitmap = imageBitmap;
-        }
     }
 }
