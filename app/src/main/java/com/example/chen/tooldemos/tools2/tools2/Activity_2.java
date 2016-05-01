@@ -91,7 +91,6 @@ public class Activity_2 extends Activity implements View.OnClickListener{
 
         playBtn.performClick();
         isPlaying = true;
-        isPause = false;
 
         mMetrics = getMetrics(this);
 
