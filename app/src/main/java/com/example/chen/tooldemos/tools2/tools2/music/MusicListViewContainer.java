@@ -2,6 +2,7 @@ package com.example.chen.tooldemos.tools2.tools2.music;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -104,6 +105,7 @@ public class MusicListViewContainer extends LinearLayout{
     //添加歌名
     private void addTextViewToMap(Music music){
         TextView textView = new TextView(context);
+        textView.setGravity(Gravity.FILL_VERTICAL);
 
         String title = music.getTitle().toString();
         Log.d("musictitle" , title);

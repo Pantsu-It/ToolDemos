@@ -64,7 +64,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private int maxCaptureSize;
 
     //界面按钮
-    private TextView playBtn, pauseBtn, nextBtn, previousBtn, stopBtn;
+    private TextView playBtn, pauseBtn, nextBtn, previousBtn, stopBtn, repeatBtn, shuffleBtn;
     private SeekBar musicProgress;
     private TextView tv_current, tv_duration, tv_musictitle;
 
@@ -90,6 +90,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         registerReceiver(myPlayerRecevier, filter);
 
         isPlaying = true;
+        isOrdered = true;
 
         mMetrics = getMetrics(this);
 
@@ -98,6 +99,8 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     //初始化组件
     private void init() {
         position = 1;
+        repeatBtn = (TextView) findViewById(R.id.btn_repeat);
+        shuffleBtn = (TextView) findViewById(R.id.btn_shuffle);
         playBtn = (TextView) findViewById(R.id.btn_play);
         stopBtn = (TextView) findViewById(R.id.btn_stop);
         pauseBtn = (TextView) findViewById(R.id.btn_pause);
@@ -121,6 +124,8 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         pauseBtn.setOnClickListener(this);
         nextBtn.setOnClickListener(this);
         previousBtn.setOnClickListener(this);
+        repeatBtn.setOnClickListener(this);
+        shuffleBtn.setOnClickListener(this);
 
         tv_musictitle.setText(musics.get(position).getTitle());
 
@@ -162,26 +167,6 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         intent.putExtra("MSG", flag);
         startService(intent);
     }
-
-    // don't do long-time task in UI-Thread~
-//    private void setupMediaPlayer() throws IOException {
-//        mMediaPlayer = MediaPlayer.create(this, R.raw.music_example);
-//
-//        mMediaPlayer.setLooping(true);
-//
-//        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-//            @Override
-//            public void onCompletion(MediaPlayer mp) {
-//
-//            }
-//        });
-//        mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-//            @Override
-//            public boolean onError(MediaPlayer mp, int what, int extra) {
-//                return false;
-//            }
-//        });
-//    }
 
     private void setupAudioView() {
         mAudioView = (AudioView) findViewById(R.id.audioView);
@@ -275,7 +260,8 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                     intent.setAction("music_service");
                     intent.putExtra("MSG", Constant.CONTINUE_MSG);
                     startService(intent);
-
+                    playBtn.setBackgroundResource(R.drawable.play_btn_pressed);
+                    pauseBtn.setBackgroundResource(R.drawable.pause_btn);
                     mAudioView.setPlaying(true);
                 }
                 break;
@@ -286,6 +272,8 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                     intent.setAction("music_service");
                     intent.putExtra("MSG", Constant.PAUSE_MSG);
                     startService(intent);
+                    playBtn.setBackgroundResource(R.drawable.play_btn);
+                    pauseBtn.setBackgroundResource(R.drawable.pause_btn_pressed);
                     mAudioView.setPlaying(false);
                 }
                 break;
@@ -297,14 +285,42 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 nextMusic();
                 mAudioView.setPlaying(true);
                 break;
+            case R.id.btn_shuffle:
+                if(isOrdered){
+                    repeatBtn.setBackgroundResource(R.drawable.repeat_btn);
+                    shuffleBtn.setBackgroundResource(R.drawable.shuffle_btn_pressed);
+                    isOrdered = false;
+                    isShuffled = true;
+                    intent.setAction(CTL_ACTION);
+                    intent.putExtra("control", 4);
+                    sendBroadcast(intent);
+                }
+                break;
+            case R.id.btn_repeat:
+                if(isShuffled){
+                    repeatBtn.setBackgroundResource(R.drawable.repeat_btn_pressed);
+                    shuffleBtn.setBackgroundResource(R.drawable.shuffle_btn);
+                    isOrdered = true;
+                    isShuffled = false;
+                    intent.setAction(CTL_ACTION);
+                    intent.putExtra("control", 2);
+                    sendBroadcast(intent);
+                }
+                break;
         }
     }
 
     private void nextMusic() {
         isPause = false;
         isPlaying = true;
+        playBtn.setBackgroundResource(R.drawable.play_btn_pressed);
+        pauseBtn.setBackgroundResource(R.drawable.pause_btn);
 
-        position++;
+        if(isShuffled){
+            position = getRandomIndex(musics.size()-1);
+        }else{
+            position++;
+        }
         if (position > musics.size() - 1)
             position = 0;
         path = musics.get(position).getPath();
@@ -319,8 +335,14 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private void previousMusic() {
         isPause = false;
         isPlaying = true;
+        playBtn.setBackgroundResource(R.drawable.play_btn_pressed);
+        pauseBtn.setBackgroundResource(R.drawable.pause_btn);
 
-        position--;
+        if(isShuffled){
+            position = getRandomIndex(musics.size()-1);
+        }else{
+            position--;
+        }
         if (position < 0)
             position = musics.size() - 1;
         path = musics.get(position).getPath();
@@ -330,6 +352,12 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         intent.putExtra("position", position);
         intent.putExtra("MSG", Constant.PREVIOUS_MSG);
         startService(intent);
+    }
+
+    //随机选取歌曲
+    private int getRandomIndex(int end) {
+        int index = (int) (Math.random() * end);
+        return index;
     }
 
     //广播接收类PlayerReciever
@@ -345,6 +373,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
             } else if (action.equals(MUSIC_DURATION)) {
                 duration = intent.getIntExtra("duration", -1);
                 musicProgress.setMax((int) duration);
+                tv_duration.setText(formatTime(duration));
             } else if (action.equals(UPDATE_ACTION)) {
                 position = intent.getIntExtra("current", -1);
                 path = musics.get(position).getPath();

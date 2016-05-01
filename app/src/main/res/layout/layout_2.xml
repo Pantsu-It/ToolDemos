@@ -37,7 +37,8 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="lala"
-            android:paddingTop="10dp"/>
+            android:gravity="center_horizontal|fill_vertical"
+            android:textSize="20px"/>
 
         <SeekBar
             android:layout_weight="8"
@@ -53,7 +54,8 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="lala"
-            android:paddingTop="10dp"/>
+            android:gravity="center_horizontal|fill_vertical"
+            android:textSize="20px"/>
 
 
     </LinearLayout>
@@ -68,27 +70,45 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/btn_previous"
-            android:background="@drawable/previous_btn"/>
+            android:background="@drawable/previous_btn"
+            android:layout_marginRight="4dp"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/btn_play"
-            android:background="@drawable/play_btn"/>
+            android:background="@drawable/play_btn_pressed"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/btn_pause"
-            android:background="@drawable/pause_btn"/>
+            android:background="@drawable/pause_btn"
+            android:layout_marginRight="4dp"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/btn_next"
-            android:background="@drawable/nextsong_btn"/>
+            android:background="@drawable/next_btn"
+            android:layout_marginRight="4dp"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/btn_stop"
-            android:background="@drawable/stop_btn"/>
+            android:background="@drawable/stop_btn"
+            android:layout_marginRight="4dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_repeat"
+            android:background="@drawable/repeat_btn_pressed"
+            android:layout_marginRight="4dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_shuffle"
+            android:background="@drawable/shuffle_btn"
+            android:layout_marginRight="4dp"/>
 
     </LinearLayout>
 
