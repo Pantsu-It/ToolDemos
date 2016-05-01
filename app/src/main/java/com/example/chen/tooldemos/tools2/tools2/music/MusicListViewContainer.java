@@ -1,7 +1,7 @@
 package com.example.chen.tooldemos.tools2.tools2.music;
-
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.example.chen.tooldemos.R;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -25,7 +26,7 @@ public class MusicListViewContainer extends LinearLayout{
     private int listNumber = 0;
 
     //    private ArrayList<TextView> tvs_line1,tvs_line2,tvs_line3;
-    private Map<Integer, TextView> tvs;
+    private ArrayList<Map<Integer, TextView>> tvs;
     private int line1Width = 0,line2Width = 0,line3Width = 0;
 
     private LinearLayout line1,line2,line3;
@@ -58,7 +59,7 @@ public class MusicListViewContainer extends LinearLayout{
         line1 = (LinearLayout) mView.findViewById(R.id.line1);
         line2 = (LinearLayout) mView.findViewById(R.id.line2);
         line3 = (LinearLayout) mView.findViewById(R.id.line3);
-        tvs = new HashMap<>();
+        tvs = new ArrayList<>();
     }
 
     public void addMusicProvider(MusicProvider musicProvider){
@@ -76,20 +77,12 @@ public class MusicListViewContainer extends LinearLayout{
             addTextViewToMap(music);
         }
 
-        Map<Integer , TextView> map = new HashMap<>();
-        for (Map.Entry<Integer , TextView> entry : tvs.entrySet()){
-            int choseNum = entry.getKey();
-            switch (choseNum){
-                case 1:
-                    line1.addView(entry.getValue());
-                    break;
-                case 2:
-                    line2.addView(entry.getValue());
-                    break;
-                case 3:
-                    line3.addView(entry.getValue());
-                    break;
-            }
+        Log.d("songNum" , musics.size()+"");
+        Log.d("num",""+tvs.size());
+
+        Iterator<Map<Integer, TextView>> iterator1 = tvs.iterator();
+        while(iterator1.hasNext()){
+            HashMap<Integer, TextView> map = (HashMap<Integer, TextView>) iterator1.next();
         }
     }
 
@@ -101,7 +94,9 @@ public class MusicListViewContainer extends LinearLayout{
         int titlelength = title.length();
         textView.setText(title);
         int choseNum = minBetweenThreeLine(line1Width,line2Width,line3Width);
-        tvs.put(choseNum , textView);
+        HashMap<Integer, TextView> map = new HashMap<>();
+        map.put(choseNum , textView);
+        tvs.add(map);
         switch (choseNum){
             case 1:
                 line1Width += textView.getWidth();
