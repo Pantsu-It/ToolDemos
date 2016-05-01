@@ -1,4 +1,5 @@
 package com.example.chen.tooldemos.tools2.tools2.music;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.chen.tooldemos.R;
+import com.example.chen.tooldemos.tools2.tools2.Activity_2;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,7 +26,7 @@ public class MusicListViewContainer extends LinearLayout{
 
     private List<Music> musics = null;
     private MusicProvider musicProvider= null;
-    private int listNumber = 0;
+    private int SongNum = 0;
 
     //    private ArrayList<TextView> tvs_line1,tvs_line2,tvs_line3;
     private ArrayList<Map<Integer, TextView>> tvs;
@@ -70,16 +72,17 @@ public class MusicListViewContainer extends LinearLayout{
     //根据当前数据多少放入哪个listView中
     public void inputMusicListView() {
         musics = musicProvider.getList();
-        Log.d("songNum" , musics.size()+"");
+        Log.d("songNum", musics.size() + "");
 
         Iterator<Music> iterator = musics.iterator();
+        int position = 0;
         while(iterator.hasNext()){
             Music music = iterator.next();
             Log.d("music" , music.getTitle().toString());
-            addTextViewToMap(music);
+            addTextViewToMap(music, position++);
         }
 
-        Log.d("num",""+tvs.size());
+        Log.d("num", "" + tvs.size());
 
         Iterator<Map<Integer, TextView>> iterator1 = tvs.iterator();
         while(iterator1.hasNext()){
@@ -103,10 +106,18 @@ public class MusicListViewContainer extends LinearLayout{
 
 
     //添加歌名
-    private void addTextViewToMap(Music music){
-        TextView textView = new TextView(context);
+    private void addTextViewToMap(Music music, int position){
+        final MusicListTextView textView = new MusicListTextView(context);
+        textView.setId(position);
         textView.setGravity(Gravity.FILL_VERTICAL);
-
+//        textView.setBackgroundResource(R.drawable.singleline_btn);
+        textView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SongNum = v.getId();
+                ((Activity_2)context).clickMusicToService(SongNum);
+            }
+        });
         String title = music.getTitle().toString();
         Log.d("musictitle" , title);
         textView.setText(title);
@@ -115,7 +126,7 @@ public class MusicListViewContainer extends LinearLayout{
         LayoutParams params = new LayoutParams(width, LayoutParams.MATCH_PARENT);
         textView.setLayoutParams(params);
 
-        int choseNum = minBetweenThreeLine(line1Width,line2Width,line3Width);
+        int choseNum = minBetweenThreeLine(line1Width, line2Width, line3Width);
         HashMap<Integer, TextView> map = new HashMap<>();
         map.put(choseNum, textView);
         tvs.add(map);
@@ -154,22 +165,10 @@ public class MusicListViewContainer extends LinearLayout{
         return num;
     }
 
+    public int getId(){
+        return SongNum;
+    }
 
 
-
-    //判断哪个列表最短
-//    public int minWidthFromLinear(LinearLayout line1,LinearLayout line2,LinearLayout line3){
-//        int minNumber = 1;
-//        int min = line1.getWidth();
-//        if(min > line2.getWidth()){
-//            minNumber = 2;
-//            min = line2.getWidth();
-//        }
-//        if(min > line3.getWidth()){
-//            minNumber = 3;
-//            min = line3.getWidth();
-//        }
-//        return minNumber;
-//    }
 }
 

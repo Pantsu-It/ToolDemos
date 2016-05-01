@@ -360,6 +360,16 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         return index;
     }
 
+    public void clickMusicToService(int id){
+        path = musics.get(id).getPath();
+        Intent intent = new Intent();
+        intent.setAction("music_service");
+        intent.putExtra("position", id);
+        intent.putExtra("path", path);
+        intent.putExtra("MSG", Constant.NEXT_MSG);
+        startService(intent);
+    }
+
     //广播接收类PlayerReciever
     class PlayerReceiver extends BroadcastReceiver {
 

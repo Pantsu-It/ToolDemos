@@ -20,5 +20,7 @@ public class Constant {
     public static final int ONE_ORDER_REPEAT = 3;
     public static final int SHUTTLE = 4;
 
+    public static Music music;
+
 
 }
