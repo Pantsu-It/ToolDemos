@@ -74,7 +74,7 @@ public class AudioView extends FrameLayout {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 0x1:
-                    if (mediaPlayer == null || !mediaPlayer.isPlaying()) {
+                    if (isPlaying()) {
                         mFFTLines.changeColor();
                         mFFTLines.resetAlpha(1);
 
@@ -88,6 +88,7 @@ public class AudioView extends FrameLayout {
             }
         }
     };
+    private boolean playing = false;
 
     public AudioView(Context context) {
         this(context, null);
@@ -173,16 +174,11 @@ public class AudioView extends FrameLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (mediaPlayer == null)
-            return false;
-
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.pause();
+                if (isPlaying()) {
                     mCover.stopRotate();
                 } else {
-                    mediaPlayer.start();
                     mCover.startRotate();
                 }
                 break;
@@ -192,8 +188,6 @@ public class AudioView extends FrameLayout {
         }
         return true;
     }
-
-    private MediaPlayer mediaPlayer;
 
     private Bitmap cover;
 
@@ -207,14 +201,11 @@ public class AudioView extends FrameLayout {
         if (cover != null && !cover.isRecycled())
             cover.recycle();
 
+
+
         RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(null, bitmap);
         cover = roundedBitmapDrawable.getBitmap();
     }
-
-    public void setMediaPlayer(MediaPlayer mediaPlayer) {
-        this.mediaPlayer = mediaPlayer;
-    }
-
 
     public void beatIt() {
         mHandler.sendEmptyMessage(0x1);
@@ -236,6 +227,15 @@ public class AudioView extends FrameLayout {
 
     public int getRequestSize() {
         return lineSize;
+    }
+
+
+    public void setPlaying(boolean playing) {
+        this.playing = playing;
+    }
+
+    public boolean isPlaying() {
+        return playing;
     }
 
     class FFTLines extends View {
