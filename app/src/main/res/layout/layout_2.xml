@@ -4,14 +4,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="lala"
-        android:id="@+id/tv_title"/>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_gravity="center_vertical"
@@ -23,7 +17,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#ffffff" />
-    </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:textSize="20sp"
+            android:text="lala"
+            android:id="@+id/tv_title"/>
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -67,45 +70,45 @@
         android:gravity="center_horizontal">
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:id="@+id/btn_previous"
             android:background="@drawable/previous_btn"
             android:layout_marginRight="4dp"/>
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:id="@+id/btn_play"
             android:background="@drawable/play_btn_pressed"/>
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:id="@+id/btn_pause"
             android:background="@drawable/pause_btn"
             android:layout_marginRight="4dp"/>
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:id="@+id/btn_next"
             android:background="@drawable/next_btn"
             android:layout_marginRight="4dp"/>
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:id="@+id/btn_stop"
             android:background="@drawable/stop_btn"
             android:layout_marginRight="4dp"/>
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:id="@+id/btn_repeat"
             android:background="@drawable/repeat_btn_pressed"
             android:layout_marginRight="4dp"/>
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:id="@+id/btn_shuffle"
             android:background="@drawable/shuffle_btn"
             android:layout_marginRight="4dp"/>

@@ -110,7 +110,7 @@ public class MusicListViewContainer extends LinearLayout{
         final MusicListTextView textView = new MusicListTextView(context);
         textView.setId(position);
         textView.setGravity(Gravity.FILL_VERTICAL);
-//        textView.setBackgroundResource(R.drawable.singleline_btn);
+        textView.setBackgroundResource(R.drawable.btn_title_shape);
         textView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -123,7 +123,9 @@ public class MusicListViewContainer extends LinearLayout{
         textView.setText(title);
 
         int width = getTrueWidth(textView);
-        LayoutParams params = new LayoutParams(width, LayoutParams.MATCH_PARENT);
+        LayoutParams params = new LayoutParams(width+16, LayoutParams.MATCH_PARENT);
+        params.setMargins(4,0,4,0);
+        textView.setPadding(8,8,8,8);
         textView.setLayoutParams(params);
 
         int choseNum = minBetweenThreeLine(line1Width, line2Width, line3Width);

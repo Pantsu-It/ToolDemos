@@ -58,7 +58,7 @@ public class AudioView extends FrameLayout {
     private RectF rect = new RectF(), rectLinesCrop = new RectF();
     private RectF rectInner = new RectF(), rectA = new RectF(), rectB = new RectF();
 
-    private int color_border_a = 0x66333333, color_border_b = 0x99666666;
+    private int color_border_a = 0x99888888, color_border_b = 0x99666666;
 
     private BorderInner mBorderInner;
     private BorderOuter mBorderOuter;

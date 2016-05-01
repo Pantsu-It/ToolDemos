@@ -12,7 +12,7 @@ import android.media.audiofx.Visualizer;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.View;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -170,7 +170,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
     private void setupAudioView() {
         mAudioView = (AudioView) findViewById(R.id.audioView);
-        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) mAudioView.getLayoutParams();
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mAudioView.getLayoutParams();
         params.width = mMetrics.widthPixels;
         params.height = mMetrics.widthPixels;
         mAudioView.resetDrawingParams(mMetrics.widthPixels, mMetrics.widthPixels);
