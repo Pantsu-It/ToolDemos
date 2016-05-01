@@ -89,16 +89,10 @@ public class Activity_2 extends Activity implements View.OnClickListener{
         filter.addAction(MUSIC_ID);
         registerReceiver(myPlayerRecevier, filter);
 
-        playBtn.performClick();
         isPlaying = true;
 
         mMetrics = getMetrics(this);
 
-//        try {
-//            setupMediaPlayer();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
     }
 
     //初始化组件
@@ -196,7 +190,7 @@ public class Activity_2 extends Activity implements View.OnClickListener{
         params.width = mMetrics.widthPixels;
         params.height = mMetrics.widthPixels;
         mAudioView.resetDrawingParams(mMetrics.widthPixels, mMetrics.widthPixels);
-
+        mAudioView.setPlaying(true);
     }
 
     private void setupVisualizer(int id) {
@@ -298,9 +292,11 @@ public class Activity_2 extends Activity implements View.OnClickListener{
                 break;
             case R.id.btn_previous:
                 previousMusic();
+                mAudioView.setPlaying(true);
                 break;
             case R.id.btn_next:
                 nextMusic();
+                mAudioView.setPlaying(true);
                 break;
         }
     }
@@ -357,6 +353,7 @@ public class Activity_2 extends Activity implements View.OnClickListener{
                 System.out.print(id+"***********");
                 setupVisualizer(id);
                 setupAudioView();
+
             }
 
         }
