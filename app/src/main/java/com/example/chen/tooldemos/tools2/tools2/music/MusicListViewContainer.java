@@ -51,7 +51,7 @@ public class MusicListViewContainer extends LinearLayout{
         init();
     }
 
-
+    //初始化
     public void init(){
         LayoutInflater mInflater = LayoutInflater.from(context);
         View mView = mInflater.inflate(R.layout.listmusic_container, null);
@@ -69,20 +69,34 @@ public class MusicListViewContainer extends LinearLayout{
     //根据当前数据多少放入哪个listView中
     public void inputMusicListView() {
         musics = musicProvider.getList();
+        Log.d("songNum" , musics.size()+"");
 
         Iterator<Music> iterator = musics.iterator();
         while(iterator.hasNext()){
             Music music = iterator.next();
-            String title = music.getTitle();
+            Log.d("music" , music.getTitle().toString());
             addTextViewToMap(music);
         }
 
-        Log.d("songNum" , musics.size()+"");
         Log.d("num",""+tvs.size());
 
         Iterator<Map<Integer, TextView>> iterator1 = tvs.iterator();
         while(iterator1.hasNext()){
             HashMap<Integer, TextView> map = (HashMap<Integer, TextView>) iterator1.next();
+            for (Map.Entry<Integer, TextView> entry : map.entrySet()){
+                int choseNum = entry.getKey();
+                switch (choseNum){
+                    case 1:
+                        line1.addView(entry.getValue());
+                        break;
+                    case 2:
+                        line2.addView(entry.getValue());
+                        break;
+                    case 3:
+                        line3.addView(entry.getValue());
+                        break;
+                }
+            }
         }
     }
 
@@ -90,24 +104,38 @@ public class MusicListViewContainer extends LinearLayout{
     //添加歌名
     private void addTextViewToMap(Music music){
         TextView textView = new TextView(context);
-        String title = music.getTitle();
-        int titlelength = title.length();
+
+        String title = music.getTitle().toString();
+        Log.d("musictitle" , title);
         textView.setText(title);
+
+        int width = getTrueWidth(textView);
+        LayoutParams params = new LayoutParams(width, LayoutParams.MATCH_PARENT);
+        textView.setLayoutParams(params);
+
         int choseNum = minBetweenThreeLine(line1Width,line2Width,line3Width);
         HashMap<Integer, TextView> map = new HashMap<>();
-        map.put(choseNum , textView);
+        map.put(choseNum, textView);
         tvs.add(map);
         switch (choseNum){
             case 1:
-                line1Width += textView.getWidth();
+                line1Width += width;
                 break;
             case 2:
-                line2Width += textView.getWidth();
+                line2Width += width;
                 break;
             case 3:
-                line3Width += textView.getWidth();
+                line3Width += width;
                 break;
         }
+    }
+
+    //获取textView真正的width
+    private int getTrueWidth(TextView view){
+        int widthMeasureSpec = MeasureSpec.makeMeasureSpec((1 << 30) -1 , MeasureSpec.AT_MOST);
+        int heightMeasureSpec = MeasureSpec.makeMeasureSpec((1 << 30) -1 , MeasureSpec.AT_MOST);
+        view.measure(widthMeasureSpec, heightMeasureSpec);
+        return view.getMeasuredWidth();
     }
 
     public int minBetweenThreeLine(int a,int b , int c){
