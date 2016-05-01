@@ -20,9 +20,72 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"></LinearLayout>
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal">
 
-    <ScrollView
+        <TextView
+            android:id="@+id/tv_current"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="lala"
+            android:paddingTop="10dp"/>
+
+        <SeekBar
+            android:layout_weight="8"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:id="@+id/sb_musicbar"
+            android:indeterminate="false"
+           />
+
+        <TextView
+            android:id="@+id/tv_duration"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="lala"
+            android:paddingTop="10dp"/>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_previous"
+            android:background="@drawable/previous_btn"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_play"
+            android:background="@drawable/play_btn"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_pause"
+            android:background="@drawable/pause_btn"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_next"
+            android:background="@drawable/nextsong_btn"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_stop"
+            android:background="@drawable/stop_btn"/>
+
+    </LinearLayout>
+
+    <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -31,6 +94,6 @@
             android:layout_height="wrap_content"
             android:id="@+id/container"/>
 
-    </ScrollView>
+    </HorizontalScrollView>
 
 </LinearLayout>
