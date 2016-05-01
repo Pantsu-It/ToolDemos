@@ -26,7 +26,7 @@ import com.example.chen.tooldemos.tools2.tools2.music.MusicService;
 
 import java.util.ArrayList;
 
-public class Activity_2 extends Activity implements View.OnClickListener{
+public class Activity_2 extends Activity implements View.OnClickListener {
 
     private String path;//歌曲路径
     private int position;//歌曲在musics的位置
@@ -66,7 +66,7 @@ public class Activity_2 extends Activity implements View.OnClickListener{
     //界面按钮
     private TextView playBtn, pauseBtn, nextBtn, previousBtn, stopBtn;
     private SeekBar musicProgress;
-    private TextView tv_current,tv_duration,tv_musictitle;
+    private TextView tv_current, tv_duration, tv_musictitle;
 
 
     //唱片
@@ -130,13 +130,12 @@ public class Activity_2 extends Activity implements View.OnClickListener{
         setAllUi();
     }
 
-    private void setAllUi(){
+    private void setAllUi() {
         musicProgress.setProgress(currentTime);
         musicProgress.setMax((int) duration);
-        if(flag == Constant.PLAYING_MSG){
+        if (flag == Constant.PLAYING_MSG) {
             Toast.makeText(this, "正在播放", Toast.LENGTH_SHORT).show();
-        }
-        else if(flag == Constant.PLAY_MSG){
+        } else if (flag == Constant.PLAY_MSG) {
             play();
         }
     }
@@ -144,7 +143,7 @@ public class Activity_2 extends Activity implements View.OnClickListener{
     private void initService() {
         Intent intent = new Intent();
         intent.putExtra("position", position);
-        intent.putExtra("path",musics.get(position).getPath());
+        intent.putExtra("path", musics.get(position).getPath());
         intent.putExtra("MSG", Constant.PLAY_MSG);
         intent.setClass(this, MusicService.class);
         startService(intent);
@@ -211,12 +210,12 @@ public class Activity_2 extends Activity implements View.OnClickListener{
     }
 
     public void updateVisualizer(byte[] fft) {
-        byte[] model = new byte[fft.length / 2 + 1];
+        float[] model = new float[fft.length / 2 + 1];
         int mSpectrumNum = mAudioView.getRequestSize();
 
         model[0] = (byte) Math.abs(fft[0]);
         for (int i = 2, j = 1; j < mSpectrumNum; ) {
-            model[j] = (byte) Math.hypot(fft[i], fft[i + 1]);
+            model[j] = (float) Math.hypot(fft[i], fft[i + 1]);
             i += 2;
             j++;
         }
@@ -268,10 +267,10 @@ public class Activity_2 extends Activity implements View.OnClickListener{
     @Override
     public void onClick(View v) {
         Intent intent = new Intent();
-        switch(v.getId()){
+        switch (v.getId()) {
             case R.id.btn_play:
-                if(isPause){
-                    isPlaying= true;
+                if (isPause) {
+                    isPlaying = true;
                     isPause = false;
                     intent.setAction("music_service");
                     intent.putExtra("MSG", Constant.CONTINUE_MSG);
@@ -281,7 +280,7 @@ public class Activity_2 extends Activity implements View.OnClickListener{
                 }
                 break;
             case R.id.btn_pause:
-                if(isPlaying){
+                if (isPlaying) {
                     isPlaying = false;
                     isPause = true;
                     intent.setAction("music_service");
@@ -306,14 +305,14 @@ public class Activity_2 extends Activity implements View.OnClickListener{
         isPlaying = true;
 
         position++;
-        if(position > musics.size()-1)
+        if (position > musics.size() - 1)
             position = 0;
         path = musics.get(position).getPath();
         Intent intent = new Intent();
         intent.setAction("music_service");
-        intent.putExtra("path",path);
+        intent.putExtra("path", path);
         intent.putExtra("position", position);
-        intent.putExtra("MSG",Constant.NEXT_MSG);
+        intent.putExtra("MSG", Constant.NEXT_MSG);
         startService(intent);
     }
 
@@ -322,14 +321,14 @@ public class Activity_2 extends Activity implements View.OnClickListener{
         isPlaying = true;
 
         position--;
-        if(position < 0)
-            position = musics.size()-1;
+        if (position < 0)
+            position = musics.size() - 1;
         path = musics.get(position).getPath();
         Intent intent = new Intent();
         intent.setAction("music_service");
         intent.putExtra("path", path);
-        intent.putExtra("position",position);
-        intent.putExtra("MSG",Constant.PREVIOUS_MSG);
+        intent.putExtra("position", position);
+        intent.putExtra("MSG", Constant.PREVIOUS_MSG);
         startService(intent);
     }
 
@@ -350,9 +349,9 @@ public class Activity_2 extends Activity implements View.OnClickListener{
                 position = intent.getIntExtra("current", -1);
                 path = musics.get(position).getPath();
                 tv_musictitle.setText(musics.get(position).getTitle());
-            }  else if(action.equals(MUSIC_ID)){
-                int id  = intent.getIntExtra("id", -1);
-                System.out.print(id+"***********");
+            } else if (action.equals(MUSIC_ID)) {
+                int id = intent.getIntExtra("id", -1);
+                System.out.print(id + "***********");
                 setupVisualizer(id);
                 setupAudioView();
 
