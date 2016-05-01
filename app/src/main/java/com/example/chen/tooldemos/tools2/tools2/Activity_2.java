@@ -174,6 +174,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         params.width = mMetrics.widthPixels;
         params.height = mMetrics.widthPixels;
         mAudioView.resetDrawingParams(mMetrics.widthPixels, mMetrics.widthPixels);
+        mAudioView.setDefaultCover();
         mAudioView.setPlaying(true);
     }
 

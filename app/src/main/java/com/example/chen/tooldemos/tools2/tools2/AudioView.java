@@ -25,6 +25,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import com.example.chen.tooldemos.R;
 
@@ -78,7 +79,6 @@ public class AudioView extends FrameLayout {
                     mBorderInner.beat();
                     break;
                 case 0x2:
-                    mFFTLines.resetAlpha(1);
                     mCover.beat();
                     mBorderInner.beat();
                     break;
@@ -110,7 +110,6 @@ public class AudioView extends FrameLayout {
         paint.setAntiAlias(true);
         paint.setDither(true);
 
-        setDefaultCover();
         setBeatTimer();
     }
 
@@ -140,7 +139,7 @@ public class AudioView extends FrameLayout {
         border_rate_b = 0.12f;
 
         float base = Math.min(rect.width(), rect.height());
-        radius_baseline = 0.54f * base / 2;
+        radius_baseline = 0.60f * base / 2;
 
         border_width_a = radius_baseline * border_rate_a;
         border_width_b = radius_baseline * border_rate_b;
@@ -174,20 +173,35 @@ public class AudioView extends FrameLayout {
 
     private Bitmap cover;
 
-    private void setDefaultCover() {
-        InputStream is = getResources().openRawResource(R.raw.music);
+    public void setDefaultCover() {
+        InputStream is = getResources().openRawResource(R.raw.music1);
         Bitmap bitmap = BitmapFactory.decodeStream(is);
         setCover(bitmap);
     }
 
     public void setCover(Bitmap bitmap) {
-        if (cover != null && !cover.isRecycled())
-            cover.recycle();
+        Bitmap rectBitmap;
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        float targetWidth = rectInner.width();
+        float targetHeight = targetWidth;
+        float sX = targetWidth / width;
+        float sY = targetHeight / height;
+        Matrix matrix = new Matrix();
+        float scale = Math.max(sX, sY);
+        matrix.postScale(scale, scale);
 
-        //
-
-        RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(null, bitmap);
-        cover = roundedBitmapDrawable.getBitmap();
+        // 裁剪为正方形图片
+        if (bitmap.getWidth() >= bitmap.getHeight()) {
+            bitmap = Bitmap.createBitmap(bitmap, (width - height) / 2, 0, height, height, matrix, true);
+        } else {
+            bitmap = Bitmap.createBitmap(bitmap, 0, (height - width) / 2, width, width, matrix, true);
+        }
+        // 裁剪为原型图片
+        RoundedBitmapDrawable
+                roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
+        roundedBitmapDrawable.setCornerRadius(bitmap.getWidth() / 2);
+        mCover.setImageDrawable(roundedBitmapDrawable);
     }
 
     public void beatIt() {
@@ -213,7 +227,7 @@ public class AudioView extends FrameLayout {
             } else {
                 bytes[i] = decade;
             }
-            if (fftForm[i] > decade * 4 && fftForm[i]>4) {
+            if (fftForm[i] > 5) {
                 ++beatCount;
             }
         }
@@ -234,6 +248,11 @@ public class AudioView extends FrameLayout {
 
     public void setPlaying(boolean playing) {
         this.playing = playing;
+
+        if (playing)
+            mCover.startRotate();
+        else
+            mCover.stopRotate();
     }
 
     public boolean isPlaying() {
@@ -364,21 +383,14 @@ public class AudioView extends FrameLayout {
         }
     }
 
-    class Cover extends View {
+    class Cover extends ImageView {
 
         private Matrix rotateMatrix = new Matrix();
         private float mRotate = 0f;
 
         public Cover(Context context) {
             super(context);
-        }
-
-        @Override
-        protected void onDraw(Canvas canvas) {
-            super.onDraw(canvas);
-            paint.setColor(0xffffffff);
-
-            canvas.drawBitmap(cover, rotateMatrix, paint);
+            setScaleType(ScaleType.MATRIX);
         }
 
         ValueAnimator animator;
@@ -388,7 +400,7 @@ public class AudioView extends FrameLayout {
 
             animator = ValueAnimator.ofFloat(mRotate, mRotate + 360);
             animator.setInterpolator(new LinearInterpolator());
-            animator.setDuration(10000);
+            animator.setDuration(20000);
             animator.setRepeatCount(Animation.INFINITE);
             animator.setRepeatMode(Animation.RESTART);
             animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -410,6 +422,7 @@ public class AudioView extends FrameLayout {
 
         public void setRotate(float rotate) {
             rotateMatrix.setRotate(rotate, rectInner.centerX(), rectInner.centerX());
+            setImageMatrix(rotateMatrix);
             mRotate = rotate;
             invalidate();
         }
