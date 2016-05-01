@@ -57,6 +57,7 @@ public class AudioView extends FrameLayout {
     private FFTLines mFFTLines;
     private Cover mCover;
 
+    //lalal
     //background: 249,248,246
 
     public AudioView(Context context) {
