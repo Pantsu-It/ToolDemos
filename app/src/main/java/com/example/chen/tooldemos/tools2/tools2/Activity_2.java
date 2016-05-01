@@ -7,27 +7,26 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.media.MediaPlayer;
+import android.content.IntentFilter;
 import android.media.audiofx.Visualizer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.chen.tooldemos.R;
+import com.example.chen.tooldemos.tools2.tools2.music.Constant;
 import com.example.chen.tooldemos.tools2.tools2.music.Music;
 import com.example.chen.tooldemos.tools2.tools2.music.MusicListViewContainer;
 import com.example.chen.tooldemos.tools2.tools2.music.MusicProvider;
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
+import com.example.chen.tooldemos.tools2.tools2.music.MusicService;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
-public class Activity_2 extends Activity {
+public class Activity_2 extends Activity implements View.OnClickListener{
 
     private String path;//歌曲路径
     private int position;//歌曲在musics的位置
@@ -53,13 +52,14 @@ public class Activity_2 extends Activity {
     public static final String MUSIC_DURATION = "action.MUSIC_DURATION";//音乐播放长度动作
     public static final String REPEAT_ACTION = "action.REPEAT_ACTION";//音乐重复播放动作
     public static final String SHUFFLE_ACTION = "action.SHUFFLE_ACTION";//音乐随机播放动作
+    public static final String MUSIC_ID = "anction.MUSIC_ID";
 
 
     //歌曲提供处
+    private PlayerReceiver myPlayerRecevier;
     private ArrayList<Music> musics;
     private MusicListViewContainer musicContainer;
     private MusicProvider musicProvider;
-    private MediaPlayer mMediaPlayer;
     private Visualizer mVisualizer;
     private int maxCaptureSize;
 
@@ -73,17 +73,38 @@ public class Activity_2 extends Activity {
     private AudioView mAudioView;
 
     private DisplayMetrics mMetrics;
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    private GoogleApiClient client;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_2);
+        init();
+        initService();
 
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(UPDATE_ACTION);
+        filter.addAction(MUSIC_CURRENT);
+        filter.addAction(MUSIC_DURATION);
+        filter.addAction(MUSIC_ID);
+        registerReceiver(myPlayerRecevier, filter);
+
+        playBtn.performClick();
+        isPlaying = true;
+        isPause = false;
+
+        mMetrics = getMetrics(this);
+
+//        try {
+//            setupMediaPlayer();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+    }
+
+    //初始化组件
+    private void init() {
+        position = 1;
         playBtn = (TextView) findViewById(R.id.btn_play);
         stopBtn = (TextView) findViewById(R.id.btn_stop);
         pauseBtn = (TextView) findViewById(R.id.btn_pause);
@@ -93,6 +114,7 @@ public class Activity_2 extends Activity {
         tv_current = (TextView) findViewById(R.id.tv_current);
         tv_duration = (TextView) findViewById(R.id.tv_duration);
         tv_musictitle = (TextView) findViewById(R.id.tv_title);
+        myPlayerRecevier = new PlayerReceiver();
 
 
         musicProvider = new MusicProvider(this);
@@ -101,39 +123,73 @@ public class Activity_2 extends Activity {
         musicContainer.addMusicProvider(musicProvider);
         musicContainer.inputMusicListView();
 
-        mMetrics = getMetrics(this);
+        playBtn.setOnClickListener(this);
+        stopBtn.setOnClickListener(this);
+        pauseBtn.setOnClickListener(this);
+        nextBtn.setOnClickListener(this);
+        previousBtn.setOnClickListener(this);
 
-        try {
-            setupMediaPlayer();
-        } catch (IOException e) {
-            e.printStackTrace();
+        tv_musictitle.setText(musics.get(position).getTitle());
+
+        path = musics.get(position).getPath();
+        duration = musics.get(position).getDuaration();
+
+        setAllUi();
+    }
+
+    private void setAllUi(){
+        musicProgress.setProgress(currentTime);
+        musicProgress.setMax((int) duration);
+        if(flag == Constant.PLAYING_MSG){
+            Toast.makeText(this, "正在播放", Toast.LENGTH_SHORT).show();
         }
-        setupVisualizer();
-        setupAudioView();
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+        else if(flag == Constant.PLAY_MSG){
+            play();
+        }
+    }
+
+    private void initService() {
+        Intent intent = new Intent();
+        intent.putExtra("position", position);
+        intent.putExtra("path",musics.get(position).getPath());
+        intent.putExtra("MSG", Constant.PLAY_MSG);
+        intent.setClass(this, MusicService.class);
+        startService(intent);
+        System.out.println("Service Start!!");
+    }
+
+
+    //默认顺序播放
+    private void play() {
+        //默认顺序播放
+//        repeatMode(Constant.ONE_ORDER_REPEAT);
+        Intent intent = new Intent();
+        intent.setAction("music_service");
+        intent.putExtra("path", path);
+        intent.putExtra("position", position);
+        intent.putExtra("MSG", flag);
+        startService(intent);
     }
 
     // don't do long-time task in UI-Thread~
-    private void setupMediaPlayer() throws IOException {
-        mMediaPlayer = MediaPlayer.create(this, R.raw.music_example);
-
-        mMediaPlayer.setLooping(true);
-
-        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-
-            }
-        });
-        mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-            @Override
-            public boolean onError(MediaPlayer mp, int what, int extra) {
-                return false;
-            }
-        });
-    }
+//    private void setupMediaPlayer() throws IOException {
+//        mMediaPlayer = MediaPlayer.create(this, R.raw.music_example);
+//
+//        mMediaPlayer.setLooping(true);
+//
+//        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+//            @Override
+//            public void onCompletion(MediaPlayer mp) {
+//
+//            }
+//        });
+//        mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+//            @Override
+//            public boolean onError(MediaPlayer mp, int what, int extra) {
+//                return false;
+//            }
+//        });
+//    }
 
     private void setupAudioView() {
         mAudioView = (AudioView) findViewById(R.id.audioView);
@@ -142,11 +198,10 @@ public class Activity_2 extends Activity {
         params.height = mMetrics.widthPixels;
         mAudioView.resetDrawingParams(mMetrics.widthPixels, mMetrics.widthPixels);
 
-        mAudioView.setMediaPlayer(mMediaPlayer);
     }
 
-    private void setupVisualizer() {
-        mVisualizer = new Visualizer(mMediaPlayer.getAudioSessionId());
+    private void setupVisualizer(int id) {
+        mVisualizer = new Visualizer(id);
         maxCaptureSize = Visualizer.getCaptureSizeRange()[1];
         mVisualizer.setCaptureSize(maxCaptureSize);
         mVisualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
@@ -184,14 +239,6 @@ public class Activity_2 extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (mMediaPlayer != null) {
-            if (mMediaPlayer.isPlaying())
-                mMediaPlayer.stop();
-
-            mVisualizer.release();
-            mMediaPlayer.release();
-            mMediaPlayer = null;
-        }
     }
 
     public String formatTime(long time) {
@@ -218,40 +265,72 @@ public class Activity_2 extends Activity {
     public void onStart() {
         super.onStart();
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Activity_2 Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app deep link URI is correct.
-                Uri.parse("android-app://com.example.chen.tooldemos.tools2.tools2/http/host/path")
-        );
-        AppIndex.AppIndexApi.start(client, viewAction);
     }
 
     @Override
     public void onStop() {
         super.onStop();
+    }
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Activity_2 Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app deep link URI is correct.
-                Uri.parse("android-app://com.example.chen.tooldemos.tools2.tools2/http/host/path")
-        );
-        AppIndex.AppIndexApi.end(client, viewAction);
-        client.disconnect();
+    @Override
+    public void onClick(View v) {
+        Intent intent = new Intent();
+        switch(v.getId()){
+            case R.id.btn_play:
+                if(isPause){
+                    isPlaying= true;
+                    isPause = false;
+                    intent.setAction("music_service");
+                    intent.putExtra("MSG", Constant.PAUSE_MSG);
+                    startService(intent);
+                }
+                break;
+            case R.id.btn_pause:
+                if(isPlaying){
+                    isPlaying = false;
+                    isPause = true;
+                    intent.setAction("music_service");
+                    intent.putExtra("MSG", Constant.CONTINUE_MSG);
+                    startService(intent);
+                }
+                break;
+            case R.id.btn_previous:
+                previousMusic();
+                break;
+            case R.id.btn_next:
+                nextMusic();
+                break;
+        }
+    }
+
+    private void nextMusic() {
+        isPause = false;
+        isPlaying = true;
+
+        if(position > musics.size()-1)
+            position = 0;
+        path = musics.get(position).getPath();
+        Intent intent = new Intent();
+        intent.setAction("music_service");
+        intent.putExtra("path",path);
+        intent.putExtra("position", position);
+        intent.putExtra("MSG",Constant.NEXT_MSG);
+        startService(intent);
+    }
+
+    private void previousMusic() {
+        isPause = false;
+        isPlaying = true;
+
+        if(position < 0)
+            position = musics.size()-1;
+        path = musics.get(position).getPath();
+        Intent intent = new Intent();
+        intent.setAction("music_service");
+        intent.putExtra("path", path);
+        intent.putExtra("position",position);
+        intent.putExtra("MSG",Constant.PREVIOUS_MSG);
+        startService(intent);
     }
 
     //广播接收类PlayerReciever
@@ -271,7 +350,13 @@ public class Activity_2 extends Activity {
                 position = intent.getIntExtra("current", -1);
                 path = musics.get(position).getPath();
                 tv_musictitle.setText(musics.get(position).getTitle());
+            }  else if(action.equals(MUSIC_ID)){
+                int id  = intent.getIntExtra("id", -1);
+                System.out.print(id+"***********");
+                setupVisualizer(id);
+                setupAudioView();
             }
+
         }
     }
 }

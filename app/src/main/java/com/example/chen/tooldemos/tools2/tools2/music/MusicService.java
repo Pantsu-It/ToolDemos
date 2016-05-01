@@ -20,7 +20,7 @@ import java.util.ArrayList;
  */
 public class MusicService extends Service{
 
-    private MediaPlayer musicPlayer;
+    public static MediaPlayer musicPlayer;
     private MusicProvider musicProvider;
     private ArrayList<Music> musics;
     private String path;
@@ -39,6 +39,7 @@ public class MusicService extends Service{
     public static final String CTL_ACTION = "action.CTL_ACTION";//控制动作
     public static final String MUSIC_CURRENT = "action.MUSIC_CURRENT";//当前音乐播放时间动作
     public static final String MUSIC_DURATION = "action.MUSIC_DURATION";//新音乐长度更新动作
+    public static final String MUSIC_ID = "anction.MUSIC_ID";
 
     private Handler handler = new Handler(){
 
@@ -62,6 +63,13 @@ public class MusicService extends Service{
         super.onCreate();
 
         musicPlayer = new MediaPlayer();
+        int id = musicPlayer.getAudioSessionId();
+
+        Intent intent = new Intent(MUSIC_ID);
+        intent.putExtra("id", id);
+        sendBroadcast(intent);
+        System.out.println(id + "^^^^^^^");
+
         musicProvider = new MusicProvider(this);
         musics = (ArrayList<Music>) musicProvider.getList();
 
@@ -110,6 +118,7 @@ public class MusicService extends Service{
         IntentFilter filter = new IntentFilter();
         filter.addAction(Activity_2.CTL_ACTION);
         registerReceiver(myReceiver, filter);
+
 
     }
 
