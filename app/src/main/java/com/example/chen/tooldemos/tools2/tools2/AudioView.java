@@ -14,14 +14,12 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
-import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.AttributeSet;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -40,7 +38,7 @@ import java.util.TimerTask;
 public class AudioView extends FrameLayout {
 
     private final Context mContext;
-    private byte[] bytes;
+    private float[] bytes;
     private Paint paint = new Paint();
     private Path path = new Path();
     private Matrix rotateMatrix = new Matrix();
@@ -68,21 +66,23 @@ public class AudioView extends FrameLayout {
 
     //background: 249,248,246
 
-    // static?
+    // static???
     Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 0x1:
-                    if (isPlaying()) {
-                        mFFTLines.changeColor();
-                        mFFTLines.resetAlpha(1);
-
-                        mCover.beat();
-                        mBorderInner.beat();
-                    }
+                    mFFTLines.changeColor();
+                    mFFTLines.resetAlpha(1);
+                    mCover.beat();
+                    mBorderInner.beat();
                     break;
                 case 0x2:
+                    mFFTLines.resetAlpha(1);
+                    mCover.beat();
+                    mBorderInner.beat();
+                    break;
+                case 0x3:
                     mBorderOuter.beat();
                     break;
             }
@@ -135,9 +135,9 @@ public class AudioView extends FrameLayout {
         lineSize = 64;
         lineWidth = 16;
         lineLengthRate = 8f;
-        bytes = new byte[lineSize];
-        border_rate_a = 0.20f;
-        border_rate_b = 0.15f;
+        bytes = new float[lineSize];
+        border_rate_a = 0.16f;
+        border_rate_b = 0.12f;
 
         float base = Math.min(rect.width(), rect.height());
         radius_baseline = 0.54f * base / 2;
@@ -172,23 +172,6 @@ public class AudioView extends FrameLayout {
         addView(mCover, params4);
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                if (isPlaying()) {
-                    mCover.stopRotate();
-                } else {
-                    mCover.startRotate();
-                }
-                break;
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                break;
-        }
-        return true;
-    }
-
     private Bitmap cover;
 
     private void setDefaultCover() {
@@ -201,22 +184,41 @@ public class AudioView extends FrameLayout {
         if (cover != null && !cover.isRecycled())
             cover.recycle();
 
-
+        //
 
         RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(null, bitmap);
         cover = roundedBitmapDrawable.getBitmap();
     }
 
     public void beatIt() {
-        mHandler.sendEmptyMessage(0x1);
-        mHandler.sendEmptyMessage(0x2);
+        if (isPlaying()) {
+            mHandler.sendEmptyMessage(0x1);
+            mHandler.sendEmptyMessage(0x3);
+        } else {
+            mHandler.sendEmptyMessage(0x2);
+            mHandler.sendEmptyMessage(0x3);
+        }
     }
 
     private static final float decadeRate = 0.84f;
 
-    public void updateVisualizer(byte[] fftform) {
+    int sum;
+
+    public void updateVisualizer(float[] fftForm) {
+        int beatCount = 0;
         for (int i = 0; i < lineSize; ++i) {
-            bytes[i] = (byte) Math.max(fftform[i], bytes[i] * decadeRate);
+            float decade = (byte) (bytes[i] * decadeRate);
+            if (fftForm[i] > decade) {
+                bytes[i] = fftForm[i];
+            } else {
+                bytes[i] = decade;
+            }
+            if (fftForm[i] > decade * 4 && fftForm[i]>4) {
+                ++beatCount;
+            }
+        }
+        if (beatCount > lineSize / 4) {
+            beatIt();
         }
 
         mBorderInner.invalidate();
@@ -241,7 +243,7 @@ public class AudioView extends FrameLayout {
     class FFTLines extends View {
 
         int[] colors = {
-                0x4e72b8, 0x905a3d, 0xa3cf62, 0x9b95c9
+                0xff4e72b8, 0xff905a3d, 0xffa3cf62, 0xff9b95c9
         };
         int current_color_index = 0;
         int color_line = colors[0];
