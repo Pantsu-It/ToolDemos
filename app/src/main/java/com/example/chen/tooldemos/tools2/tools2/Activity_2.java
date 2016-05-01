@@ -281,8 +281,10 @@ public class Activity_2 extends Activity implements View.OnClickListener{
                     isPlaying= true;
                     isPause = false;
                     intent.setAction("music_service");
-                    intent.putExtra("MSG", Constant.PAUSE_MSG);
+                    intent.putExtra("MSG", Constant.CONTINUE_MSG);
                     startService(intent);
+
+                    mAudioView.setPlaying(true);
                 }
                 break;
             case R.id.btn_pause:
@@ -290,8 +292,9 @@ public class Activity_2 extends Activity implements View.OnClickListener{
                     isPlaying = false;
                     isPause = true;
                     intent.setAction("music_service");
-                    intent.putExtra("MSG", Constant.CONTINUE_MSG);
+                    intent.putExtra("MSG", Constant.PAUSE_MSG);
                     startService(intent);
+                    mAudioView.setPlaying(false);
                 }
                 break;
             case R.id.btn_previous:
