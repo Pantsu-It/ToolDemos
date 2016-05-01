@@ -15,10 +15,11 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.media.MediaPlayer;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -30,6 +31,8 @@ import android.widget.FrameLayout;
 import com.example.chen.tooldemos.R;
 
 import java.io.InputStream;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by Pants on 2016/4/20.
@@ -56,7 +59,7 @@ public class AudioView extends FrameLayout {
     private RectF rect = new RectF(), rectLinesCrop = new RectF();
     private RectF rectInner = new RectF(), rectA = new RectF(), rectB = new RectF();
 
-    private int color_border_a = 0x99666666, color_border_b = 0x66333333;
+    private int color_border_a = 0x66333333, color_border_b = 0x99666666;
 
     private BorderInner mBorderInner;
     private BorderOuter mBorderOuter;
@@ -64,6 +67,27 @@ public class AudioView extends FrameLayout {
     private Cover mCover;
 
     //background: 249,248,246
+
+    // static?
+    Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case 0x1:
+                    if (mediaPlayer == null || !mediaPlayer.isPlaying()) {
+                        mFFTLines.changeColor();
+                        mFFTLines.resetAlpha(1);
+
+                        mCover.beat();
+                        mBorderInner.beat();
+                    }
+                    break;
+                case 0x2:
+                    mBorderOuter.beat();
+                    break;
+            }
+        }
+    };
 
     public AudioView(Context context) {
         this(context, null);
@@ -86,21 +110,37 @@ public class AudioView extends FrameLayout {
         paint.setDither(true);
 
         setDefaultCover();
+        setBeatTimer();
+    }
+
+    private void setBeatTimer() {
+        new Thread() {
+            @Override
+            public void run() {
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        beatIt();
+                    }
+                }, 0, 1000);
+            }
+        }.start();
     }
 
     public void resetDrawingParams(int width, int height) {
+        rect.set(0, 0, width, height);
+        startDegree = -135;
+
         lineSize = 64;
         lineWidth = 16;
         lineLengthRate = 8f;
-
-        startDegree = -135;
-
-        border_rate_a = border_rate_b = 0.16f;
-
-        rect.set(0, 0, width, height);
+        bytes = new byte[lineSize];
+        border_rate_a = 0.20f;
+        border_rate_b = 0.15f;
 
         float base = Math.min(rect.width(), rect.height());
         radius_baseline = 0.54f * base / 2;
+
         border_width_a = radius_baseline * border_rate_a;
         border_width_b = radius_baseline * border_rate_b;
         radius_inner = radius_baseline - 0.5f * border_width_a;
@@ -148,7 +188,6 @@ public class AudioView extends FrameLayout {
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-
                 break;
         }
         return true;
@@ -176,8 +215,18 @@ public class AudioView extends FrameLayout {
         this.mediaPlayer = mediaPlayer;
     }
 
+
+    public void beatIt() {
+        mHandler.sendEmptyMessage(0x1);
+        mHandler.sendEmptyMessage(0x2);
+    }
+
+    private static final float decadeRate = 0.84f;
+
     public void updateVisualizer(byte[] fftform) {
-        bytes = fftform;
+        for (int i = 0; i < lineSize; ++i) {
+            bytes[i] = (byte) Math.max(fftform[i], bytes[i] * decadeRate);
+        }
 
         mBorderInner.invalidate();
         mBorderOuter.invalidate();
@@ -191,7 +240,11 @@ public class AudioView extends FrameLayout {
 
     class FFTLines extends View {
 
-        int color_line = 0xaa4e5e8e;
+        int[] colors = {
+                0x4e72b8, 0x905a3d, 0xa3cf62, 0x9b95c9
+        };
+        int current_color_index = 0;
+        int color_line = colors[0];
 
         public FFTLines(Context context) {
             super(context);
@@ -224,19 +277,24 @@ public class AudioView extends FrameLayout {
             super.setAlpha(alpha);
         }
 
-        long duration;
+        private static final long duration = 1000;
+        private static final float minAlpha = 0.3f;
         ObjectAnimator alphaAnim;
 
-        public void resetAlpha(float alpha) {
-            if (alphaAnim.isRunning())
-                alphaAnim.cancel();
-
-            alphaAnim = ObjectAnimator.ofFloat(this, "alpha", alpha, 0.1f);
-            alphaAnim.setDuration(duration);
-//                alphaAnim.setAutoCancel(true);
-            alphaAnim.start();
+        public void changeColor() {
+            color_line = colors[++current_color_index % colors.length];
         }
 
+        public void resetAlpha(float startAlpha) {
+            if (alphaAnim != null && alphaAnim.isRunning())
+                alphaAnim.cancel();
+
+            startAlpha = Math.max(startAlpha, minAlpha);
+            alphaAnim = ObjectAnimator.ofFloat(this, "alpha", startAlpha, minAlpha);
+            alphaAnim.setInterpolator(new LinearInterpolator());
+            alphaAnim.setDuration(duration);
+            alphaAnim.start();
+        }
     }
 
     class BorderOuter extends View {
@@ -253,6 +311,35 @@ public class AudioView extends FrameLayout {
             canvas.drawOval(rectB, paint);
         }
 
+        Animation beatIn, beatOut;
+
+        public void beat() {
+            if (beatIn == null)
+                beatIn = AnimationUtils.loadAnimation(mContext, R.anim.beat_scale_slow_in);
+            else
+                beatIn.reset();
+            startAnimation(beatIn);
+            beatIn.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    if (beatOut == null)
+                        beatOut = AnimationUtils.loadAnimation(mContext, R.anim.beat_scale_slow_out);
+                    else
+                        beatOut.reset();
+                    startAnimation(beatOut);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+        }
     }
 
     class BorderInner extends View {
@@ -267,6 +354,11 @@ public class AudioView extends FrameLayout {
             paint.setColor(color_border_a);
 
             canvas.drawOval(rectA, paint);
+        }
+
+        public void beat() {
+            Animation beat = AnimationUtils.loadAnimation(mContext, R.anim.beat_scale_fast);
+            startAnimation(beat);
         }
     }
 
@@ -302,7 +394,6 @@ public class AudioView extends FrameLayout {
                 public void onAnimationUpdate(ValueAnimator animation) {
                     float rotate = (float) animation.getAnimatedValue();
                     setRotate(rotate);
-                    Log.d("rotate", String.valueOf(rotate));
                 }
             });
             animator.start();
@@ -321,5 +412,9 @@ public class AudioView extends FrameLayout {
             invalidate();
         }
 
+        public void beat() {
+            Animation beat = AnimationUtils.loadAnimation(mContext, R.anim.beat_scale_fast);
+            startAnimation(beat);
+        }
     }
 }
