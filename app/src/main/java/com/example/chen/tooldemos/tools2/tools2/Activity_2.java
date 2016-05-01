@@ -11,15 +11,11 @@ import android.util.DisplayMetrics;
 import android.widget.LinearLayout;
 
 import com.example.chen.tooldemos.R;
-import com.example.chen.tooldemos.tools2.tools2.music.MusicListViewContainer;
-import com.example.chen.tooldemos.tools2.tools2.music.MusicProvider;
 
 import java.io.IOException;
 
 public class Activity_2 extends Activity {
 
-    private MusicListViewContainer musicContainer;
-    private MusicProvider musicProvider;
     private MediaPlayer mMediaPlayer;
     private Visualizer mVisualizer;
     private int maxCaptureSize;
@@ -32,15 +28,7 @@ public class Activity_2 extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_2);
-
-
-        musicProvider = new MusicProvider(this);
-        musicContainer = (MusicListViewContainer) findViewById(R.id.container);
-        musicContainer.addMusicProvider(musicProvider);
-        musicContainer.inputMusicListView();
-
         mMetrics = getMetrics(this);
-        setMusicResources();
 
         try {
             setupMediaPlayer();
@@ -50,12 +38,6 @@ public class Activity_2 extends Activity {
         setupVisualizer();
         setupAudioView();
     }
-
-    //搜寻本地音乐列表
-    private void setMusicResources() {
-
-    }
-
 
     // don't do long-time task in UI-Thread~
     private void setupMediaPlayer() throws IOException {
@@ -82,6 +64,7 @@ public class Activity_2 extends Activity {
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) mAudioView.getLayoutParams();
         params.width = mMetrics.widthPixels;
         params.height = mMetrics.widthPixels;
+        mAudioView.resetDrawingParams(mMetrics.widthPixels, mMetrics.widthPixels);
 
         mAudioView.setMediaPlayer(mMediaPlayer);
     }

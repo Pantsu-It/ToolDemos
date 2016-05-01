@@ -4,7 +4,7 @@ package com.example.chen.tooldemos.tools2.tools2;
  * Created by chen on 16/5/1.
  */
 
-import android.annotation.TargetApi;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,23 +14,22 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.media.MediaPlayer;
-import android.os.Build;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewTreeObserver;
+import android.widget.FrameLayout;
 
 import com.example.chen.tooldemos.R;
-
 
 import java.io.InputStream;
 
 /**
  * Created by Pants on 2016/4/20.
  */
-public class AudioView extends View {
-    // fuck gradle!
-
+public class AudioView extends FrameLayout {
 
     private byte[] bytes;
     private Paint paint = new Paint();
@@ -48,11 +47,17 @@ public class AudioView extends View {
     private float border_width_a, border_width_b;
     private float radius_inner, radius_a, radius_b;
 
-    private RectF rect = new RectF();
-    private RectF rectLines = new RectF(), rectInner = new RectF(), rectA = new RectF(), rectB = new RectF();
-    private Bitmap bitmap;
+    private RectF rect = new RectF(), rectLinesCrop = new RectF();
+    private RectF rectInner = new RectF(), rectA = new RectF(), rectB = new RectF();
 
     private int color_border_a = 0x33666666, color_border_b = 0x66333333;
+
+    private BorderInner mBorderInner;
+    private BorderOuter mBorderOuter;
+    private FFTLines mFFTLines;
+    private Cover mCover;
+
+    //background: 249,248,246
 
     public AudioView(Context context) {
         this(context, null);
@@ -65,25 +70,15 @@ public class AudioView extends View {
     public AudioView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
-        bytes = null;
-        paint.setStrokeWidth(1f);
-        paint.setAntiAlias(true);
-        paint.setStyle(Paint.Style.FILL);
+        mBorderInner = new BorderInner(context);
+        mBorderOuter = new BorderOuter(context);
+        mFFTLines = new FFTLines(context);
+        mCover = new Cover(context);
 
-        InputStream is = getResources().openRawResource(R.raw.music);
-        bitmap = BitmapFactory.decodeStream(is);
-
-        ViewTreeObserver observer = getViewTreeObserver();
-        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-            @Override
-            public void onGlobalLayout() {
-                resetDrawingParams();
-            }
-        });
+        setDefaultCover();
     }
 
-    public void resetDrawingParams() {
+    public void resetDrawingParams(int width, int height) {
         lineSize = 64;
         lineWidth = 16;
         lineLengthRate = 8f;
@@ -92,7 +87,7 @@ public class AudioView extends View {
 
         border_rate_a = border_rate_b = 0.16f;
 
-        rect.set(0, 0, getWidth(), getHeight());
+        rect.set(0, 0, width, height);
 
         float base = Math.min(rect.width(), rect.height());
         radius_baseline = 0.54f * base / 2;
@@ -106,47 +101,24 @@ public class AudioView extends View {
 
         float centerX = rect.centerX();
         float centerY = rect.centerY();
-        rectLines.set(centerX - radius_baseline, centerY - radius_baseline, centerX + radius_baseline, centerY + radius_baseline);
-        rectInner.set(centerX - radius_inner, centerY - radius_inner, centerX + radius_inner, centerY + radius_inner);
-        rectA.set(centerX - radius_a, centerY - radius_a, centerX + radius_a, centerY + radius_a);
-        rectB.set(centerX - radius_b, centerY - radius_b, centerX + radius_b, centerY + radius_b);
-    }
+        rectLinesCrop.set(centerX - radius_baseline, centerY - radius_baseline, centerX + radius_baseline, centerY + radius_baseline);
+        rectInner.set(0, 0, radius_inner * 2, radius_inner * 2);
+        rectA.set(0, 0, radius_a * 2, radius_a * 2);
+        rectB.set(0, 0, radius_b * 2, radius_b * 2);
 
-    //background: 249,248,246
+        FrameLayout.LayoutParams params1 = new FrameLayout.LayoutParams((int) rect.width(), (int) rect.height());
+        params1.gravity = Gravity.CENTER;
+        FrameLayout.LayoutParams params2 = new FrameLayout.LayoutParams((int) rectB.width(), (int) rectB.width());
+        params2.gravity = Gravity.CENTER;
+        FrameLayout.LayoutParams params3 = new FrameLayout.LayoutParams((int) rectA.width(), (int) rectA.width());
+        params3.gravity = Gravity.CENTER;
+        FrameLayout.LayoutParams params4 = new FrameLayout.LayoutParams((int) rectInner.width(), (int) rectInner.width());
+        params4.gravity = Gravity.CENTER;
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        if (bytes == null) {
-            return;
-        }
-        // draw lines
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setDither(true);
-        paint.setAntiAlias(true);
-        paint.setColor(0xaa4e5e8e);
-        paint.setStrokeWidth(lineWidth);
-
-        for (int i = 0; i < lineSize; ++i) {
-            path.reset();
-            path.moveTo(rectLines.left, rectLines.centerY());
-            path.lineTo(rectLines.left - bytes[i] * lineLengthRate, rect.centerY());
-            rotateMatrix.setRotate(deltaDegree * i, rect.centerX(), rect.centerY());
-
-            path.transform(rotateMatrix);
-            canvas.drawPath(path, paint);
-        }
-
-        paint.setStyle(Paint.Style.FILL);
-        // draw outer_border with alpha-gray: 124,123,121
-        paint.setColor(color_border_b);
-        canvas.drawOval(rectB, paint);
-        // draw inner_border with alpha-gray: 150,149,147
-        paint.setColor(color_border_a);
-        canvas.drawOval(rectA, paint);
-        // draw inner_content "music" with 53,53,53
-//        canvas.drawTextOnPath("MUSIC", textPath, 0, 0,paint);
-        canvas.drawBitmap(bitmap, null, rectInner, paint);
+        addView(mFFTLines, params1);
+        addView(mBorderOuter, params2);
+        addView(mBorderInner, params3);
+        addView(mCover, params4);
     }
 
     @Override
@@ -172,17 +144,146 @@ public class AudioView extends View {
 
     private MediaPlayer mediaPlayer;
 
+    private Bitmap cover;
+
+    private void setDefaultCover() {
+        InputStream is = getResources().openRawResource(R.raw.music);
+        Bitmap bitmap = BitmapFactory.decodeStream(is);
+        setCover(bitmap);
+    }
+
+    public void setCover(Bitmap bitmap) {
+        if (cover != null && !cover.isRecycled())
+            cover.recycle();
+
+        RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(null, bitmap);
+        cover = roundedBitmapDrawable.getBitmap();
+        mCover.setImageBitmap(cover);
+    }
+
     public void setMediaPlayer(MediaPlayer mediaPlayer) {
         this.mediaPlayer = mediaPlayer;
     }
 
     public void updateVisualizer(byte[] fftform) {
         bytes = fftform;
-        invalidate();
+
+        mBorderInner.invalidate();
+        mBorderOuter.invalidate();
+        mFFTLines.invalidate();
+        mCover.invalidate();
     }
 
     public int getRequestSize() {
         return lineSize;
     }
-}
 
+    class FFTLines extends View {
+
+        int color_line = 0xaa4e5e8e;
+
+        public FFTLines(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+            if (bytes == null) {
+                return;
+            }
+            // draw lines
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setDither(true);
+            paint.setAntiAlias(true);
+            paint.setColor(color_line);
+            paint.setStrokeWidth(lineWidth);
+
+            for (int i = 0; i < lineSize; ++i) {
+                path.reset();
+                path.moveTo(rectLinesCrop.left, rectLinesCrop.centerY());
+                path.lineTo(rectLinesCrop.left - bytes[i] * lineLengthRate, rect.centerY());
+                rotateMatrix.setRotate(deltaDegree * i, rectLinesCrop.centerX(), rectLinesCrop.centerY());
+
+                path.transform(rotateMatrix);
+                canvas.drawPath(path, paint);
+            }
+        }
+
+        @Override
+        public void setAlpha(float alpha) {
+            super.setAlpha(alpha);
+        }
+
+        long duration;
+        ObjectAnimator alphaAnim;
+
+        public void resetAlpha(float alpha) {
+            if (alphaAnim.isRunning())
+                alphaAnim.cancel();
+
+            alphaAnim = ObjectAnimator.ofFloat(this, "alpha", alpha, 0.1f);
+            alphaAnim.setDuration(duration);
+//                alphaAnim.setAutoCancel(true);
+            alphaAnim.start();
+        }
+
+    }
+
+    class BorderOuter extends View {
+
+        public BorderOuter(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(color_border_b);
+
+            // draw outer_border with alpha-gray: 124,123,121
+            canvas.drawOval(rectB, paint);
+        }
+
+    }
+
+    class BorderInner extends View {
+
+        public BorderInner(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(color_border_a);
+
+            // draw inner_border with alpha-gray: 150,149,147
+            canvas.drawOval(rectA, paint);
+        }
+    }
+
+    class Cover extends View {
+
+        private Bitmap imageBitmap;
+
+        public Cover(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+
+
+        }
+
+        public void rotate() {
+
+        }
+
+        public void setImageBitmap(Bitmap imageBitmap) {
+            this.imageBitmap = imageBitmap;
+        }
+    }
+}
