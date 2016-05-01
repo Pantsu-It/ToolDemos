@@ -305,6 +305,7 @@ public class Activity_2 extends Activity implements View.OnClickListener{
         isPause = false;
         isPlaying = true;
 
+        position++;
         if(position > musics.size()-1)
             position = 0;
         path = musics.get(position).getPath();
@@ -320,6 +321,7 @@ public class Activity_2 extends Activity implements View.OnClickListener{
         isPause = false;
         isPlaying = true;
 
+        position--;
         if(position < 0)
             position = musics.size()-1;
         path = musics.get(position).getPath();
