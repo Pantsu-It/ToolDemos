@@ -115,7 +115,7 @@ public class MusicProvider {
             BitmapFactory.decodeFileDescriptor(fd, null, options);
             // 我们的目标是在800pixel的画面上显示
             // 所以需要调用computeSampleSize得到图片缩放的比例
-            options.inSampleSize = 100;
+            options.inSampleSize = 1;
             // 我们得到了缩放的比例，现在开始正式读入Bitmap数据
             options.inJustDecodeBounds = false;
             options.inDither = false;

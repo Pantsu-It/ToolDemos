@@ -139,7 +139,6 @@ public class MusicListViewContainer extends LinearLayout {
         textView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 changeSelectedView(textView);
 
                 SongNum = v.getId();

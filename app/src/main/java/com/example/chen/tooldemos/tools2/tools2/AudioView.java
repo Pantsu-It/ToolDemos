@@ -187,6 +187,9 @@ public class AudioView extends FrameLayout {
             setDefaultCover();
         else
             setCover(cover);
+
+        mCover.setRotate(0);
+        mCover.startRotate();
     }
 
     private void setCover(Bitmap bitmap) {
@@ -427,7 +430,6 @@ public class AudioView extends FrameLayout {
             if (animator != null && animator.isStarted())
                 animator.cancel();
         }
-
 
         public void setRotate(float rotate) {
             rotateMatrix.setRotate(rotate, rectInner.centerX(), rectInner.centerX());
