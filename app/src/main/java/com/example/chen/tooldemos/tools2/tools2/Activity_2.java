@@ -33,8 +33,6 @@ import com.example.chen.tooldemos.tools2.tools2.music.Music;
 import com.example.chen.tooldemos.tools2.tools2.music.MusicListViewContainer;
 import com.example.chen.tooldemos.tools2.tools2.music.MusicProvider;
 import com.example.chen.tooldemos.tools2.tools2.music.MusicService;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.ArrayList;
 
@@ -89,7 +87,6 @@ public class Activity_2 extends Activity implements View.OnClickListener {
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
-    private GoogleApiClient client;
 
     public Handler AnimHandler = new Handler(){
         @Override
@@ -120,9 +117,6 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
         mMetrics = getMetrics(this);
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     //初始化组件
