@@ -79,7 +79,7 @@ public class MusicService extends Service{
             public void onCompletion(MediaPlayer mp) {
                 if(status == 1){//单曲循环
                     musicPlayer.start();
-                }else if(status == 2){
+                }else if(status == 2){//顺序播放
                     current++;
                     if(current > musics.size()-1)
                         current = 0;
@@ -89,22 +89,7 @@ public class MusicService extends Service{
                     sendBroadcast(sendIntent);
                     path = musics.get(current).getPath();
                     play(0);
-                }else if(status == 3){//顺序播放
-                    current++;
-                    if(current <= musics.size()-1){
-                        Intent sendIntent = new Intent(UPDATE_ACTION);
-                        sendIntent.putExtra("current", current);
-                        sendBroadcast(sendIntent);
-                        path = musics.get(current).getPath();
-                        play(0);
-                    }else{
-                        musicPlayer.seekTo(0);
-                        current = 0;
-                        Intent sendIntent = new Intent(UPDATE_ACTION);
-                        sendIntent.putExtra("current", current);
-                        sendBroadcast(sendIntent);
-                    }
-                }else if(status == 4){//随机
+                }else if(status == 3){//随机播放
                     current = getRandomSong(musics.size()-1);
                     Intent sendIntent = new Intent(UPDATE_ACTION);
                     sendIntent.putExtra("current", current);
@@ -257,10 +242,7 @@ public class MusicService extends Service{
                     status = 2;//全部循环
                     break;
                 case 3:
-                    status = 3;//顺序(不循环）
-                    break;
-                case 4:
-                    status = 4;//随机
+                    status = 3;//随机
                     break;
             }
             System.out.println(status);

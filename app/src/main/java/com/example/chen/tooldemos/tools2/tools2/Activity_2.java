@@ -35,15 +35,9 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private int flag;//播放标志
 
     //播放歌曲的方式
-    private int repeateState = 2;
-    private final int isSingleRepeat = 1;
-    private final int isOneRepeat = 2;
-    private final int isShuffleRepeat = 3;
+    private int songModeNum = 2;// 1 代表 单曲播放 2 代表 顺序播放 3 代表 随机播放
 
     private boolean isPlaying;//正在播放
-    private boolean isPause;//暂停
-    private boolean isOrdered;//顺序播放
-    private boolean isShuffled;//随机播放
 
     public static final String UPDATE_ACTION = "action.UPDATE_ACTION";//更新动作
     public static final String CTL_ACTION = "action.CTL_ACTION";//控制动作
@@ -64,7 +58,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private int maxCaptureSize;
 
     //界面按钮
-    private TextView playBtn, pauseBtn, nextBtn, previousBtn, stopBtn, repeatBtn, shuffleBtn;
+    private TextView playBtn, nextBtn, previousBtn,modeBtn;
     private SeekBar musicProgress;
     private TextView tv_current, tv_duration, tv_musictitle;
 
@@ -90,7 +84,6 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         registerReceiver(myPlayerRecevier, filter);
 
         isPlaying = true;
-        isOrdered = true;
 
         mMetrics = getMetrics(this);
 
@@ -99,11 +92,8 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     //初始化组件
     private void init() {
         position = 1;
-        repeatBtn = (TextView) findViewById(R.id.btn_repeat);
-        shuffleBtn = (TextView) findViewById(R.id.btn_shuffle);
+        modeBtn = (TextView) findViewById(R.id.btn_mode);
         playBtn = (TextView) findViewById(R.id.btn_play);
-        stopBtn = (TextView) findViewById(R.id.btn_stop);
-        pauseBtn = (TextView) findViewById(R.id.btn_pause);
         nextBtn = (TextView) findViewById(R.id.btn_next);
         previousBtn = (TextView) findViewById(R.id.btn_previous);
         musicProgress = (SeekBar) findViewById(R.id.sb_musicbar);
@@ -120,12 +110,9 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         musicContainer.inputMusicListView();
 
         playBtn.setOnClickListener(this);
-        stopBtn.setOnClickListener(this);
-        pauseBtn.setOnClickListener(this);
         nextBtn.setOnClickListener(this);
         previousBtn.setOnClickListener(this);
-        repeatBtn.setOnClickListener(this);
-        shuffleBtn.setOnClickListener(this);
+        modeBtn.setOnClickListener(this);
 
         tv_musictitle.setText(musics.get(position).getTitle());
 
@@ -255,27 +242,22 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         Intent intent = new Intent();
         switch (v.getId()) {
             case R.id.btn_play:
-                if (isPause) {
+                if(!isPlaying){
                     isPlaying = true;
-                    isPause = false;
+                    playBtn.setBackgroundResource(R.drawable.pause_btn_pressed);
+                    mAudioView.setPlaying(true);
                     intent.setAction("music_service");
                     intent.putExtra("MSG", Constant.CONTINUE_MSG);
                     startService(intent);
-                    playBtn.setBackgroundResource(R.drawable.play_btn_pressed);
-                    pauseBtn.setBackgroundResource(R.drawable.pause_btn);
-                    mAudioView.setPlaying(true);
-                }
-                break;
-            case R.id.btn_pause:
-                if (isPlaying) {
+                    System.out.println(" this is isplaying");
+                }else if(isPlaying){
                     isPlaying = false;
-                    isPause = true;
+                    playBtn.setBackgroundResource(R.drawable.play_btn_pressed);
+                    mAudioView.setPlaying(false);
                     intent.setAction("music_service");
                     intent.putExtra("MSG", Constant.PAUSE_MSG);
                     startService(intent);
-                    playBtn.setBackgroundResource(R.drawable.play_btn);
-                    pauseBtn.setBackgroundResource(R.drawable.pause_btn_pressed);
-                    mAudioView.setPlaying(false);
+                    System.out.println(" this is !!!!isplaying");
                 }
                 break;
             case R.id.btn_previous:
@@ -286,41 +268,52 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 nextMusic();
                 mAudioView.setPlaying(true);
                 break;
-            case R.id.btn_shuffle:
-                if(isOrdered){
-                    repeatBtn.setBackgroundResource(R.drawable.repeat_btn);
-                    shuffleBtn.setBackgroundResource(R.drawable.shuffle_btn_pressed);
-                    isOrdered = false;
-                    isShuffled = true;
-                    intent.setAction(CTL_ACTION);
-                    intent.putExtra("control", 4);
-                    sendBroadcast(intent);
-                }
-                break;
-            case R.id.btn_repeat:
-                if(isShuffled){
-                    repeatBtn.setBackgroundResource(R.drawable.repeat_btn_pressed);
-                    shuffleBtn.setBackgroundResource(R.drawable.shuffle_btn);
-                    isOrdered = true;
-                    isShuffled = false;
-                    intent.setAction(CTL_ACTION);
-                    intent.putExtra("control", 2);
-                    sendBroadcast(intent);
-                }
+            case R.id.btn_mode:
+                changeMode();
+                changeBtnApparence();
                 break;
         }
     }
 
-    private void nextMusic() {
-        isPause = false;
-        isPlaying = true;
-        playBtn.setBackgroundResource(R.drawable.play_btn_pressed);
-        pauseBtn.setBackgroundResource(R.drawable.pause_btn);
+    //切换歌曲状态样貌
+    private void changeBtnApparence() {
+        switch(songModeNum){
+            case 1:
+                modeBtn.setBackgroundResource(R.drawable.one_btn);
+                break;
+            case 2:
+                modeBtn.setBackgroundResource(R.drawable.repeat_btn_pressed);
+                break;
+            case 3:
+                modeBtn.setBackgroundResource(R.drawable.shuffle_btn_pressed);
+                break;
+        }
+    }
 
-        if(isShuffled){
-            position = getRandomIndex(musics.size()-1);
-        }else{
-            position++;
+    //切换歌曲播放模式
+    private void changeMode(){
+        songModeNum++;
+        //循环回去
+        if(songModeNum > 3){
+            songModeNum = 1;
+        }
+
+        Intent intent = new Intent(CTL_ACTION);
+        intent.putExtra("control" , songModeNum);
+        sendBroadcast(intent);
+    }
+
+    private void nextMusic() {
+        isPlaying = true;
+        playBtn.setBackgroundResource(R.drawable.pause_btn_pressed);
+
+        switch (songModeNum){
+            case 2:
+                position++;
+                break;
+            case 3:
+                position = getRandomIndex(musics.size()-1);
+                break;
         }
         if (position > musics.size() - 1)
             position = 0;
@@ -334,16 +327,18 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     }
 
     private void previousMusic() {
-        isPause = false;
         isPlaying = true;
-        playBtn.setBackgroundResource(R.drawable.play_btn_pressed);
-        pauseBtn.setBackgroundResource(R.drawable.pause_btn);
+        playBtn.setBackgroundResource(R.drawable.pause_btn_pressed);
 
-        if(isShuffled){
-            position = getRandomIndex(musics.size()-1);
-        }else{
-            position--;
+        switch (songModeNum){
+            case 2:
+                position--;
+                break;
+            case 3:
+                position = getRandomIndex(musics.size()-1);
+                break;
         }
+
         if (position < 0)
             position = musics.size() - 1;
         path = musics.get(position).getPath();
