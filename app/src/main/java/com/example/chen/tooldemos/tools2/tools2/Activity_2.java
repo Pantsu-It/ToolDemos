@@ -415,6 +415,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         startService(intent);
 
         mAudioView.setCover(music);
+        renderScriptBackground();
         musicContainer.changeSelectedView(position);
     }
 
@@ -441,8 +442,8 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         intent.putExtra("MSG", Constant.PREVIOUS_MSG);
         startService(intent);
 
-        renderScriptBackground();
         mAudioView.setCover(music);
+        renderScriptBackground();
         musicContainer.changeSelectedView(position);
     }
 
@@ -460,19 +461,14 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         intent.putExtra("position", id);
         intent.putExtra("path", path);
         intent.putExtra("MSG", Constant.NEXT_MSG);
-        mAudioView.setCover(music);
-        musicContainer.changeSelectedView(id);
         startService(intent);
+        mAudioView.setCover(music);
+        renderScriptBackground();
+        musicContainer.changeSelectedView(id);
     }
 
     public void renderScriptBackground() {
-
-        Bitmap bitmap =mAudioView.getMutedCoverBitmap();
-        BitmapDrawable bd = new BitmapDrawable(bitmap);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            background.setBackground(bd);
-            background.postInvalidate();
-        }
+        mAudioView.setMutedCoverBitmap(background);
     }
 
     //广播接收类PlayerReciever
@@ -496,12 +492,12 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
 
                 mAudioView.setCover(musics.get(position));
+                renderScriptBackground();
                 musicContainer.changeSelectedView(position);
             } else if (action.equals(MUSIC_ID)) {
                 System.out.println(id + "***********id is " + id);
                 setupVisualizer(id);
                 setupAudioView();
-
             }
 
         }

@@ -16,9 +16,11 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.os.Handler;
 import android.os.Message;
+import android.renderscript.ScriptIntrinsicBlur;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -218,18 +220,11 @@ public class AudioView extends RelativeLayout {
         roundedBitmapDrawable.setCornerRadius(bitmap.getWidth() / 2);
         mCover.setImageDrawable(roundedBitmapDrawable);
 
-        if (mCoverBitmap != null && !mCoverBitmap.isRecycled())
-            mCoverBitmap.recycle();
         mCoverBitmap = roundedBitmapDrawable.getBitmap();
     }
 
-    public Bitmap getMutedCoverBitmap() {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 50;
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-        mCoverBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-        return BitmapFactory.decodeStream(in, null, options);
+    public void setMutedCoverBitmap(View view) {
+        ImageBlurUtil.getMutedCoverBitmap(mContext, mCoverBitmap, view);
     }
 
     public void beatIt() {
