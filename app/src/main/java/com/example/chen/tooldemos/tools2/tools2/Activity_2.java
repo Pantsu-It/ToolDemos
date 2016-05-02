@@ -71,7 +71,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
     //界面按钮
     private LinearLayout background;
-    private TextView playBtn, nextBtn, previousBtn, modeBtn;
+    private TextView playBtn, nextBtn, previousBtn, modeBtn, listBtn;
     private SeekBar musicProgress;
     private TextView tv_current, tv_duration, tv_musictitle;
 
@@ -114,6 +114,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     //初始化组件
     private void init() {
         background = (LinearLayout) findViewById(R.id.layout_activity);
+        listBtn = (TextView) findViewById(R.id.btn_list);
         modeBtn = (TextView) findViewById(R.id.btn_mode);
         playBtn = (TextView) findViewById(R.id.btn_play);
         nextBtn = (TextView) findViewById(R.id.btn_next);
@@ -135,6 +136,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         nextBtn.setOnClickListener(this);
         previousBtn.setOnClickListener(this);
         modeBtn.setOnClickListener(this);
+        listBtn.setOnClickListener(this);
 
         preferences = getSharedPreferences("musicPreference", MODE_WORLD_READABLE);
         editor = preferences.edit();
@@ -266,8 +268,8 @@ public class Activity_2 extends Activity implements View.OnClickListener {
             id = preferences.getInt("id", 1);
             setupVisualizer(id);
             setupAudioView();
+            renderScriptBackground();
         }
-
     }
 
     @Override
@@ -330,8 +332,18 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 changeMode();
                 changeBtnApparence();
                 break;
+            case R.id.btn_list:
+                openListAnimation();
+                break;
         }
     }
+
+    //将列表显现
+    private void openListAnimation() {
+        musicContainer.setVisibility(View.VISIBLE);
+
+    }
+
 
     //切换歌曲状态样貌
     private void changeBtnApparence() {
@@ -435,10 +447,8 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     }
 
     public void renderScriptBackground() {
-        Music music = musics.get(position);
 
-        Bitmap bitmap = MusicProvider.getArtworkFromFile(this, music.getId(), music.getAlbumId());
-//        Bitmap big_bitmap = Bitmap.createBitmap(bitmap )
+        Bitmap bitmap =mAudioView.getMutedCoverBitmap();
         BitmapDrawable bd = new BitmapDrawable(bitmap);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             background.setBackground(bd);

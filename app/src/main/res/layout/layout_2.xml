@@ -7,18 +7,18 @@
 
 
     <RelativeLayout
+        android:layout_alignParentTop="true"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_gravity="center_vertical"
         android:layout_weight="1"
-        android:background="#ffffff"
-        android:alpha="0.5">
+        >
 
         <com.example.chen.tooldemos.tools2.tools2.AudioView
             android:id="@+id/audioView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#ffffff" />
+            />
 
         <TextView
             android:layout_width="wrap_content"
@@ -31,6 +31,7 @@
     </RelativeLayout>
 
     <LinearLayout
+
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:orientation="horizontal"
@@ -76,38 +77,49 @@
             android:layout_height="32dp"
             android:id="@+id/btn_mode"
             android:background="@drawable/repeat_btn_pressed"
-            android:layout_marginRight="30dp"
-            android:layout_marginLeft="30dp"/>
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"/>
         <TextView
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:id="@+id/btn_previous"
             android:background="@drawable/previous_btn"
-            android:layout_marginRight="30dp"
-            android:layout_marginLeft="30dp"/>
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"/>
 
         <TextView
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:id="@+id/btn_play"
             android:background="@drawable/pause_btn_pressed"
-            android:layout_marginRight="30dp"
-            android:layout_marginLeft="30dp"/>
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"/>
 
         <TextView
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:id="@+id/btn_next"
             android:background="@drawable/next_btn"
-            android:layout_marginRight="30dp"
-            android:layout_marginLeft="30dp"/>
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"/>
+
+        <TextView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:id="@+id/btn_list"
+            android:background="@drawable/list_btn"
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"/>
 
 
     </LinearLayout>
 
     <HorizontalScrollView
+        android:visibility="gone"
+        android:layout_gravity="bottom"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:fillViewport="false">
 
         <com.example.chen.tooldemos.tools2.tools2.music.MusicListViewContainer
             android:layout_width="wrap_content"
