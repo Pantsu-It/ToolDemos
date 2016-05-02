@@ -160,8 +160,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private void play() {
         //默认顺序播放
 //        repeatMode(Constant.ONE_ORDER_REPEAT);
-        Intent intent = new Intent();
-        intent.setAction("music_service");
+        Intent intent = new Intent(this, MusicService.class);
         intent.putExtra("path", path);
         intent.putExtra("position", position);
         intent.putExtra("MSG", flag);
@@ -286,14 +285,13 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        Intent intent = new Intent();
+        Intent intent = new Intent(this, MusicService.class);
         switch (v.getId()) {
             case R.id.btn_play:
                 if (!isPlaying) {
                     isPlaying = true;
                     playBtn.setBackgroundResource(R.drawable.pause_btn_pressed);
                     mAudioView.setPlaying(true);
-                    intent.setAction("music_service");
                     intent.putExtra("MSG", Constant.CONTINUE_MSG);
                     startService(intent);
                     System.out.println(" this is isplaying");
@@ -301,7 +299,6 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                     isPlaying = false;
                     playBtn.setBackgroundResource(R.drawable.play_btn_pressed);
                     mAudioView.setPlaying(false);
-                    intent.setAction("music_service");
                     intent.putExtra("MSG", Constant.PAUSE_MSG);
                     startService(intent);
                     System.out.println(" this is !!!!isplaying");
@@ -366,8 +363,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
             position = 0;
         Music music = musics.get(position);
         path = music.getPath();
-        Intent intent = new Intent();
-        intent.setAction("music_service");
+        Intent intent = new Intent(this, MusicService.class);
         intent.putExtra("path", path);
         intent.putExtra("position", position);
         intent.putExtra("MSG", Constant.NEXT_MSG);
@@ -394,8 +390,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
             position = musics.size() - 1;
         Music music = musics.get(position);
         path = music.getPath();
-        Intent intent = new Intent();
-        intent.setAction("music_service");
+        Intent intent = new Intent(this, MusicService.class);
         intent.putExtra("path", path);
         intent.putExtra("position", position);
         intent.putExtra("MSG", Constant.PREVIOUS_MSG);
@@ -414,8 +409,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     public void clickMusicToService(int id) {
         path = musics.get(id).getPath();
         Music music = musics.get(id);
-        Intent intent = new Intent();
-        intent.setAction("music_service");
+        Intent intent = new Intent(this, MusicService.class);
         intent.putExtra("position", id);
         intent.putExtra("path", path);
         intent.putExtra("MSG", Constant.NEXT_MSG);
