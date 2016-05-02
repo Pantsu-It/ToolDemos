@@ -176,6 +176,7 @@ public class AudioView extends RelativeLayout {
         InputStream is = getResources().openRawResource(R.raw.music2);
         Bitmap bitmap = BitmapFactory.decodeStream(is);
         setCover(bitmap);
+        //
     }
 
     public void setCover(Music music) {
