@@ -174,7 +174,7 @@ public class AudioView extends FrameLayout {
     private Bitmap cover;
 
     public void setDefaultCover() {
-        InputStream is = getResources().openRawResource(R.raw.music1);
+        InputStream is = getResources().openRawResource(R.raw.music2);
         Bitmap bitmap = BitmapFactory.decodeStream(is);
         setCover(bitmap);
     }

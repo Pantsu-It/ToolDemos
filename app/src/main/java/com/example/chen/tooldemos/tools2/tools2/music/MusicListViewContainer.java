@@ -22,17 +22,17 @@ import java.util.Map;
 /**
  * Created by chen on 16/4/30.
  */
-public class MusicListViewContainer extends LinearLayout{
+public class MusicListViewContainer extends LinearLayout {
 
     private List<Music> musics = null;
-    private MusicProvider musicProvider= null;
+    private MusicProvider musicProvider = null;
     private int SongNum = 0;
 
     //    private ArrayList<TextView> tvs_line1,tvs_line2,tvs_line3;
     private ArrayList<Map<Integer, TextView>> tvs;
-    private int line1Width = 0,line2Width = 0,line3Width = 0;
+    private int line1Width = 0, line2Width = 0, line3Width = 0;
 
-    private LinearLayout line1,line2,line3;
+    private LinearLayout line1, line2, line3;
 
     private Context context = null;
 
@@ -55,7 +55,7 @@ public class MusicListViewContainer extends LinearLayout{
     }
 
     //初始化
-    public void init(){
+    public void init() {
         LayoutInflater mInflater = LayoutInflater.from(context);
         View mView = mInflater.inflate(R.layout.listmusic_container, null);
         addView(mView);
@@ -65,7 +65,7 @@ public class MusicListViewContainer extends LinearLayout{
         tvs = new ArrayList<>();
     }
 
-    public void addMusicProvider(MusicProvider musicProvider){
+    public void addMusicProvider(MusicProvider musicProvider) {
         this.musicProvider = musicProvider;
     }
 
@@ -76,20 +76,20 @@ public class MusicListViewContainer extends LinearLayout{
 
         Iterator<Music> iterator = musics.iterator();
         int position = 0;
-        while(iterator.hasNext()){
+        while (iterator.hasNext()) {
             Music music = iterator.next();
-            Log.d("music" , music.getTitle().toString());
+            Log.d("music", music.getTitle().toString());
             addTextViewToMap(music, position++);
         }
 
         Log.d("num", "" + tvs.size());
 
         Iterator<Map<Integer, TextView>> iterator1 = tvs.iterator();
-        while(iterator1.hasNext()){
+        while (iterator1.hasNext()) {
             HashMap<Integer, TextView> map = (HashMap<Integer, TextView>) iterator1.next();
-            for (Map.Entry<Integer, TextView> entry : map.entrySet()){
+            for (Map.Entry<Integer, TextView> entry : map.entrySet()) {
                 int choseNum = entry.getKey();
-                switch (choseNum){
+                switch (choseNum) {
                     case 1:
                         line1.addView(entry.getValue());
                         break;
@@ -104,9 +104,10 @@ public class MusicListViewContainer extends LinearLayout{
         }
     }
 
+    private TextView lastText;
 
     //添加歌名
-    private void addTextViewToMap(Music music, int position){
+    private void addTextViewToMap(Music music, int position) {
         final MusicListTextView textView = new MusicListTextView(context);
         textView.setId(position);
         textView.setGravity(Gravity.FILL_VERTICAL);
@@ -114,25 +115,32 @@ public class MusicListViewContainer extends LinearLayout{
         textView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (lastText != null)
+                    lastText.setSelected(false);
+                textView.setSelected(true);
+                lastText = textView;
+                
                 SongNum = v.getId();
-                ((Activity_2)context).clickMusicToService(SongNum);
+                textView.setSelected(true);
+                ((Activity_2) context).clickMusicToService(SongNum);
+
             }
         });
         String title = music.getTitle().toString();
-        Log.d("musictitle" , title);
+        Log.d("musictitle", title);
         textView.setText(title);
 
         int width = getTrueWidth(textView);
-        LayoutParams params = new LayoutParams(width+16, LayoutParams.MATCH_PARENT);
-        params.setMargins(4,0,4,0);
-        textView.setPadding(8,8,8,8);
+        LayoutParams params = new LayoutParams(width + 16, LayoutParams.MATCH_PARENT);
+        params.setMargins(4, 0, 4, 0);
+        textView.setPadding(8, 8, 8, 8);
         textView.setLayoutParams(params);
 
         int choseNum = minBetweenThreeLine(line1Width, line2Width, line3Width);
         HashMap<Integer, TextView> map = new HashMap<>();
         map.put(choseNum, textView);
         tvs.add(map);
-        switch (choseNum){
+        switch (choseNum) {
             case 1:
                 line1Width += width;
                 break;
@@ -146,28 +154,28 @@ public class MusicListViewContainer extends LinearLayout{
     }
 
     //获取textView真正的width
-    private int getTrueWidth(TextView view){
-        int widthMeasureSpec = MeasureSpec.makeMeasureSpec((1 << 30) -1 , MeasureSpec.AT_MOST);
-        int heightMeasureSpec = MeasureSpec.makeMeasureSpec((1 << 30) -1 , MeasureSpec.AT_MOST);
+    private int getTrueWidth(TextView view) {
+        int widthMeasureSpec = MeasureSpec.makeMeasureSpec((1 << 30) - 1, MeasureSpec.AT_MOST);
+        int heightMeasureSpec = MeasureSpec.makeMeasureSpec((1 << 30) - 1, MeasureSpec.AT_MOST);
         view.measure(widthMeasureSpec, heightMeasureSpec);
         return view.getMeasuredWidth();
     }
 
-    public int minBetweenThreeLine(int a,int b , int c){
+    public int minBetweenThreeLine(int a, int b, int c) {
         int minWidth = a;
         int num = 1;
-        if(minWidth > b){
+        if (minWidth > b) {
             num = 2;
             minWidth = b;
         }
-        if(minWidth > c){
+        if (minWidth > c) {
             num = 3;
             minWidth = c;
         }
         return num;
     }
 
-    public int getId(){
+    public int getId() {
         return SongNum;
     }
 
