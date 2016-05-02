@@ -19,13 +19,12 @@ import android.os.Message;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import com.example.chen.tooldemos.R;
 import com.example.chen.tooldemos.tools2.tools2.music.Music;
@@ -38,7 +37,7 @@ import java.util.TimerTask;
 /**
  * Created by Pants on 2016/4/20.
  */
-public class AudioView extends FrameLayout {
+public class AudioView extends RelativeLayout {
 
     private final Context mContext;
     private float[] bytes;
@@ -158,14 +157,14 @@ public class AudioView extends FrameLayout {
         rectA.set(0, 0, radius_a * 2, radius_a * 2);
         rectB.set(0, 0, radius_b * 2, radius_b * 2);
 
-        FrameLayout.LayoutParams params1 = new FrameLayout.LayoutParams((int) rect.width(), (int) rect.height());
-        params1.gravity = Gravity.CENTER;
-        FrameLayout.LayoutParams params2 = new FrameLayout.LayoutParams((int) rectB.width(), (int) rectB.width());
-        params2.gravity = Gravity.CENTER;
-        FrameLayout.LayoutParams params3 = new FrameLayout.LayoutParams((int) rectA.width(), (int) rectA.width());
-        params3.gravity = Gravity.CENTER;
-        FrameLayout.LayoutParams params4 = new FrameLayout.LayoutParams((int) rectInner.width(), (int) rectInner.width());
-        params4.gravity = Gravity.CENTER;
+        RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams((int) rect.width(), (int) rect.height());
+        params1.addRule(RelativeLayout.CENTER_IN_PARENT);
+        RelativeLayout.LayoutParams params2 = new RelativeLayout.LayoutParams((int) rectB.width(), (int) rectB.width());
+        params2.addRule(RelativeLayout.CENTER_IN_PARENT);
+        RelativeLayout.LayoutParams params3 = new RelativeLayout.LayoutParams((int) rectA.width(), (int) rectA.width());
+        params3.addRule(RelativeLayout.CENTER_IN_PARENT);
+        RelativeLayout.LayoutParams params4 = new RelativeLayout.LayoutParams((int) rectInner.width(), (int) rectInner.width());
+        params4.addRule(RelativeLayout.CENTER_IN_PARENT);
 
         addView(mFFTLines, params1);
         addView(mBorderOuter, params2);

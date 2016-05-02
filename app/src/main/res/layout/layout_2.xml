@@ -11,7 +11,8 @@
         android:layout_height="0dp"
         android:layout_gravity="center_vertical"
         android:layout_weight="1"
-        android:background="#ffffff">
+        android:background="#ffffff"
+        android:alpha="0.5">
 
         <com.example.chen.tooldemos.tools2.tools2.AudioView
             android:id="@+id/audioView"

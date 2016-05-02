@@ -9,11 +9,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.audiofx.Visualizer;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -25,6 +29,8 @@ import com.example.chen.tooldemos.tools2.tools2.music.Music;
 import com.example.chen.tooldemos.tools2.tools2.music.MusicListViewContainer;
 import com.example.chen.tooldemos.tools2.tools2.music.MusicProvider;
 import com.example.chen.tooldemos.tools2.tools2.music.MusicService;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.ArrayList;
 
@@ -64,6 +70,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private int maxCaptureSize;
 
     //界面按钮
+    private LinearLayout background;
     private TextView playBtn, nextBtn, previousBtn, modeBtn;
     private SeekBar musicProgress;
     private TextView tv_current, tv_duration, tv_musictitle;
@@ -73,6 +80,11 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private AudioView mAudioView;
 
     private DisplayMetrics mMetrics;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -94,10 +106,14 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
         mMetrics = getMetrics(this);
 
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     //初始化组件
     private void init() {
+        background = (LinearLayout) findViewById(R.id.layout_activity);
         modeBtn = (TextView) findViewById(R.id.btn_mode);
         playBtn = (TextView) findViewById(R.id.btn_play);
         nextBtn = (TextView) findViewById(R.id.btn_next);
@@ -257,13 +273,11 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     @Override
     public void onStart() {
         super.onStart();
-        Log.d("onStart", "it it onStart");
-    }
 
+    }
     @Override
     public void onStop() {
         super.onStop();
-        Log.d("onStop", "it it onStop");
     }
 
     @Override
@@ -396,6 +410,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         intent.putExtra("MSG", Constant.PREVIOUS_MSG);
         startService(intent);
 
+        renderScriptBackground();
         mAudioView.setCover(music);
         musicContainer.changeSelectedView(position);
     }
@@ -409,6 +424,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     public void clickMusicToService(int id) {
         path = musics.get(id).getPath();
         Music music = musics.get(id);
+        playBtn.setBackgroundResource(R.drawable.pause_btn_pressed);
         Intent intent = new Intent(this, MusicService.class);
         intent.putExtra("position", id);
         intent.putExtra("path", path);
@@ -416,6 +432,18 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         mAudioView.setCover(music);
         musicContainer.changeSelectedView(id);
         startService(intent);
+    }
+
+    public void renderScriptBackground() {
+        Music music = musics.get(position);
+
+        Bitmap bitmap = MusicProvider.getArtworkFromFile(this, music.getId(), music.getAlbumId());
+//        Bitmap big_bitmap = Bitmap.createBitmap(bitmap )
+        BitmapDrawable bd = new BitmapDrawable(bitmap);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            background.setBackground(bd);
+            background.postInvalidate();
+        }
     }
 
     //广播接收类PlayerReciever
@@ -436,6 +464,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 position = intent.getIntExtra("current", -1);
                 path = musics.get(position).getPath();
                 tv_musictitle.setText(musics.get(position).getTitle());
+
 
                 mAudioView.setCover(musics.get(position));
                 musicContainer.changeSelectedView(position);

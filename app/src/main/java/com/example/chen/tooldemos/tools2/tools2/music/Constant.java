@@ -1,5 +1,7 @@
 package com.example.chen.tooldemos.tools2.tools2.music;
 
+import android.os.Build;
+
 /**
  * Created by chen on 16/5/1.
  */
@@ -22,5 +24,14 @@ public class Constant {
 
     public static Music music;
 
+    public static int sdkVersion;
 
+    public static int getSdkVersionNumber(){
+        try{
+            sdkVersion = Integer.valueOf(Build.VERSION.SDK);
+        }catch(NumberFormatException e){
+            sdkVersion = 0;
+        }
+        return sdkVersion;
+    }
 }
