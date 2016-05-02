@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.IBinder;
@@ -21,6 +22,13 @@ import java.util.ArrayList;
 public class MusicService extends Service{
 
     public static MediaPlayer musicPlayer;
+    private int id;
+
+
+    private SharedPreferences preferences;
+    private SharedPreferences.Editor editor;
+
+
     private MusicProvider musicProvider;
     private ArrayList<Music> musics;
     private String path;
@@ -63,12 +71,13 @@ public class MusicService extends Service{
         super.onCreate();
 
         musicPlayer = new MediaPlayer();
-        int id = musicPlayer.getAudioSessionId();
+        id = musicPlayer.getAudioSessionId();
 
-        Intent intent = new Intent(MUSIC_ID);
-        intent.putExtra("id", id);
-        sendBroadcast(intent);
-        System.out.println(id + "^^^^^^^");
+        preferences = getSharedPreferences("musicPreference", MODE_WORLD_READABLE);
+        editor = preferences.edit();
+        editor.putInt("id", id);
+        editor.commit();
+
 
         musicProvider = new MusicProvider(this);
         musics = (ArrayList<Music>) musicProvider.getList();
@@ -120,6 +129,7 @@ public class MusicService extends Service{
 
     @Override
     public void onStart(Intent intent, int startId) {
+
         path = intent.getStringExtra("path");
         current = intent.getIntExtra("position", -1);
         msg = intent.getIntExtra("MSG", 0);
@@ -137,7 +147,7 @@ public class MusicService extends Service{
         } else if (msg == Constant.NEXT_MSG) {
             next();
         } else if (msg == Constant.PROGRASS_MSG) {//进度跟新
-            currentTime = intent.getIntExtra("Progress", -1);
+            currentTime = intent.getIntExtra("currentTime", -1);
             play(currentTime);
         } else if (msg == Constant.PLAYING_MSG) {
             handler.sendEmptyMessage(1);
@@ -204,6 +214,12 @@ public class MusicService extends Service{
             musicPlayer.release();
             musicPlayer = null;
         }
+
+        editor.putInt("currentTime", currentTime);
+        editor.putString("path",path);
+        editor.putLong("duration",duration);
+        editor.putInt("position", current);
+        editor.commit();
     }
 
     private final class PreparedListener implements android.media.MediaPlayer.OnPreparedListener {

@@ -8,9 +8,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.media.audiofx.Visualizer;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
@@ -32,7 +34,11 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private int position;//歌曲在musics的位置
     private int currentTime;//歌曲的当前时间
     private long duration;//歌曲现在的间隔
-    private int flag;//播放标志
+    private int flag;
+
+    private int id;//MediaPlayer的id
+    private SharedPreferences preferences;
+    private SharedPreferences.Editor editor;
 
     //播放歌曲的方式
     private int songModeNum = 2;// 1 代表 单曲播放 2 代表 顺序播放 3 代表 随机播放
@@ -72,6 +78,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_2);
+        Log.d("onCreate", "it it onCreate");
         init();
         initService();
 
@@ -91,7 +98,6 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
     //初始化组件
     private void init() {
-        position = 1;
         modeBtn = (TextView) findViewById(R.id.btn_mode);
         playBtn = (TextView) findViewById(R.id.btn_play);
         nextBtn = (TextView) findViewById(R.id.btn_next);
@@ -114,10 +120,15 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         previousBtn.setOnClickListener(this);
         modeBtn.setOnClickListener(this);
 
-        tv_musictitle.setText(musics.get(position).getTitle());
+        preferences = getSharedPreferences("musicPreference", MODE_WORLD_READABLE);
+        editor = preferences.edit();
 
+        position = preferences.getInt("position",0);
+        tv_musictitle.setText(musics.get(position).getTitle());
         path = musics.get(position).getPath();
         duration = musics.get(position).getDuaration();
+        currentTime = preferences.getInt("currentTime", 0);
+
 
         setAllUi();
     }
@@ -139,6 +150,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         intent.putExtra("MSG", Constant.PLAY_MSG);
         intent.setClass(this, MusicService.class);
         startService(intent);
+
         System.out.println("Service Start!!");
     }
 
@@ -201,10 +213,6 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         return metrics;
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
 
     public String formatTime(long time) {
         String min = time / (1000 * 60) + "";
@@ -227,14 +235,51 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d("onPause" , "it it onPause");
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        Log.d("onResume" , "it it onResume");
+
+        if(mAudioView == null || mVisualizer == null){
+            id = preferences.getInt("id" , -1);
+            setupVisualizer(id);
+            setupAudioView();
+        }
+
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
-
+        Log.d("onStart", "it it onStart");
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        Log.d("onStop", "it it onStop");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d("onDestroy", "it it onDestroy");
+        editor.putInt("position", position);
+        editor.putLong("duration", duration);
+        editor.putString("path", path);
+        editor.putInt("currentTime", currentTime);
+        editor.commit();
+        unregisterReceiver(myPlayerRecevier);
+
+        Intent intent = new Intent(this, MusicService.class);
+        stopService(intent);
+
+        mVisualizer.setEnabled(false);
     }
 
     @Override
@@ -385,8 +430,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 path = musics.get(position).getPath();
                 tv_musictitle.setText(musics.get(position).getTitle());
             } else if (action.equals(MUSIC_ID)) {
-                int id = intent.getIntExtra("id", -1);
-                System.out.print(id + "***********");
+                System.out.println(id + "***********id is " + id);
                 setupVisualizer(id);
                 setupAudioView();
 

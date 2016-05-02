@@ -74,7 +74,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:id="@+id/btn_mode"
-            android:background="@drawable/shuffle_btn_pressed"
+            android:background="@drawable/repeat_btn_pressed"
             android:layout_marginRight="30dp"
             android:layout_marginLeft="30dp"/>
         <TextView
