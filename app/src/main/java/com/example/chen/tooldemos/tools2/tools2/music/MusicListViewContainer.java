@@ -65,7 +65,7 @@ public class MusicListViewContainer extends LinearLayout {
         line2 = (LinearLayout) mView.findViewById(R.id.line2);
         line3 = (LinearLayout) mView.findViewById(R.id.line3);
         tvs = new ArrayList<>();
-        sp =  context.getSharedPreferences("musicPreference", context.MODE_WORLD_READABLE);
+        sp = context.getSharedPreferences("musicPreference", context.MODE_WORLD_READABLE);
         SongNum = sp.getInt("position", 0);
     }
 
@@ -108,26 +108,40 @@ public class MusicListViewContainer extends LinearLayout {
         }
     }
 
-    private TextView lastText;
+    private View lastSelectView;
+
+    public void changeSelectedView(View selectView) {
+        if (lastSelectView != null)
+            lastSelectView.setSelected(false);
+        selectView.setSelected(true);
+        lastSelectView = selectView;
+    }
+
+    public void changeSelectedView(int selectedPosition) {
+        View selectedView;
+        Map<Integer, TextView> map = tvs.get(selectedPosition);
+        for (Map.Entry<Integer, TextView> entry : map.entrySet()) {
+            selectedView = entry.getValue();
+            changeSelectedView(selectedView);
+        }
+    }
 
     //添加歌名
     private void addTextViewToMap(Music music, int position) {
         final MusicListTextView textView = new MusicListTextView(context);
         textView.setId(position);
-        if(position == SongNum){
+        if (position == SongNum) {
             textView.setSelected(true);
-            lastText = textView;
+            lastSelectView = textView;
         }
         textView.setGravity(Gravity.FILL_VERTICAL);
         textView.setBackgroundResource(R.drawable.btn_title_shape);
         textView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (lastText != null)
-                    lastText.setSelected(false);
-                textView.setSelected(true);
-                lastText = textView;
-                
+
+                changeSelectedView(textView);
+
                 SongNum = v.getId();
                 textView.setSelected(true);
                 ((Activity_2) context).clickMusicToService(SongNum);
@@ -147,7 +161,7 @@ public class MusicListViewContainer extends LinearLayout {
         int choseNum = minBetweenThreeLine(line1Width, line2Width, line3Width);
         HashMap<Integer, TextView> map = new HashMap<>();
         map.put(choseNum, textView);
-        tvs.add(map);
+        tvs.add(position, map);
         switch (choseNum) {
             case 1:
                 line1Width += width;

@@ -28,6 +28,8 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.example.chen.tooldemos.R;
+import com.example.chen.tooldemos.tools2.tools2.music.Music;
+import com.example.chen.tooldemos.tools2.tools2.music.MusicProvider;
 
 import java.io.InputStream;
 import java.util.Timer;
@@ -171,16 +173,23 @@ public class AudioView extends FrameLayout {
         addView(mCover, params4);
     }
 
-    private Bitmap cover;
-
     public void setDefaultCover() {
         InputStream is = getResources().openRawResource(R.raw.music2);
         Bitmap bitmap = BitmapFactory.decodeStream(is);
         setCover(bitmap);
     }
 
-    public void setCover(Bitmap bitmap) {
-        Bitmap rectBitmap;
+    public void setCover(Music music) {
+        int id = music.getId();
+        int albumId = music.getAlbumId();
+        Bitmap cover = MusicProvider.getArtworkFromFile(mContext, id, albumId);
+        if (cover == null)
+            setDefaultCover();
+        else
+            setCover(cover);
+    }
+
+    private void setCover(Bitmap bitmap) {
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
         float targetWidth = rectInner.width();
@@ -197,7 +206,7 @@ public class AudioView extends FrameLayout {
         } else {
             bitmap = Bitmap.createBitmap(bitmap, 0, (height - width) / 2, width, width, matrix, true);
         }
-        // 裁剪为原型图片
+        // 裁剪为圆型图片
         RoundedBitmapDrawable
                 roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
         roundedBitmapDrawable.setCornerRadius(bitmap.getWidth() / 2);
