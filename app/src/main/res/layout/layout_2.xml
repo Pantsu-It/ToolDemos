@@ -7,7 +7,7 @@
 
 
     <RelativeLayout
-        android:layout_alignParentTop="true"
+
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_gravity="center_vertical"
@@ -26,7 +26,6 @@
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:textSize="20sp"
-            android:text="lala"
             android:id="@+id/tv_title"/>
     </RelativeLayout>
 
@@ -70,7 +69,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_horizontal">
+        android:gravity="center_horizontal"
+        android:layout_marginBottom="5dp">
 
         <TextView
             android:layout_width="32dp"
@@ -115,13 +115,12 @@
     </LinearLayout>
 
     <HorizontalScrollView
-        android:visibility="gone"
         android:layout_gravity="bottom"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fillViewport="false">
+        android:layout_height="wrap_content">
 
         <com.example.chen.tooldemos.tools2.tools2.music.MusicListViewContainer
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/container"/>

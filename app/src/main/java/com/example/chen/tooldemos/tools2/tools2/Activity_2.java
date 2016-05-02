@@ -14,9 +14,13 @@ import android.graphics.drawable.BitmapDrawable;
 import android.media.audiofx.Visualizer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
@@ -50,6 +54,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private int songModeNum = 2;// 1 代表 单曲播放 2 代表 顺序播放 3 代表 随机播放
 
     private boolean isPlaying;//正在播放
+    private boolean isAppear;
 
     public static final String UPDATE_ACTION = "action.UPDATE_ACTION";//更新动作
     public static final String CTL_ACTION = "action.CTL_ACTION";//控制动作
@@ -86,6 +91,14 @@ public class Activity_2 extends Activity implements View.OnClickListener {
      */
     private GoogleApiClient client;
 
+    public Handler AnimHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg){
+            musicContainer.setVisibility(View.GONE);
+            background.requestLayout();
+        }
+    };
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,6 +116,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         registerReceiver(myPlayerRecevier, filter);
 
         isPlaying = true;
+        isAppear = false;
 
         mMetrics = getMetrics(this);
 
@@ -333,6 +347,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 changeBtnApparence();
                 break;
             case R.id.btn_list:
+                System.out.println("Animation is coming");
                 openListAnimation();
                 break;
         }
@@ -340,8 +355,18 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
     //将列表显现
     private void openListAnimation() {
-        musicContainer.setVisibility(View.VISIBLE);
-
+        if(!isAppear){
+            isAppear = true;
+            musicContainer.setVisibility(View.VISIBLE);
+            background.requestLayout();
+            Animation anim = AnimationUtils.loadAnimation(this, R.anim.list_appear);
+            musicContainer.startAnimation(anim);
+        }else{
+            isAppear = false;
+            Animation anim = AnimationUtils.loadAnimation(this, R.anim.list_disappear);
+            musicContainer.startAnimation(anim);
+            AnimHandler.sendEmptyMessageDelayed(0,100);
+        }
     }
 
 
