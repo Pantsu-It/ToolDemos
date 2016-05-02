@@ -30,6 +30,8 @@ import com.example.chen.tooldemos.R;
 import com.example.chen.tooldemos.tools2.tools2.music.Music;
 import com.example.chen.tooldemos.tools2.tools2.music.MusicProvider;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -176,7 +178,6 @@ public class AudioView extends RelativeLayout {
         InputStream is = getResources().openRawResource(R.raw.music2);
         Bitmap bitmap = BitmapFactory.decodeStream(is);
         setCover(bitmap);
-        //
     }
 
     public void setCover(Music music) {
@@ -191,6 +192,8 @@ public class AudioView extends RelativeLayout {
         mCover.setRotate(0);
         mCover.startRotate();
     }
+
+    Bitmap mCoverBitmap;
 
     private void setCover(Bitmap bitmap) {
         int width = bitmap.getWidth();
@@ -214,6 +217,19 @@ public class AudioView extends RelativeLayout {
                 roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
         roundedBitmapDrawable.setCornerRadius(bitmap.getWidth() / 2);
         mCover.setImageDrawable(roundedBitmapDrawable);
+
+        if (mCoverBitmap != null && !mCoverBitmap.isRecycled())
+            mCoverBitmap.recycle();
+        mCoverBitmap = roundedBitmapDrawable.getBitmap();
+    }
+
+    public Bitmap getMutedCoverBitmap() {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 50;
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+        mCoverBitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+        return BitmapFactory.decodeStream(in, null, options);
     }
 
     public void beatIt() {

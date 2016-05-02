@@ -108,18 +108,7 @@ public class MusicProvider {
                     fd = pfd.getFileDescriptor();
                 }
             }
-            options.inSampleSize = 1;
-            // 只进行大小判断
-            options.inJustDecodeBounds = true;
-            // 调用此方法得到options得到图片大小
-            BitmapFactory.decodeFileDescriptor(fd, null, options);
-            // 我们的目标是在800pixel的画面上显示
-            // 所以需要调用computeSampleSize得到图片缩放的比例
-            options.inSampleSize = 100;
-            // 我们得到了缩放的比例，现在开始正式读入Bitmap数据
-            options.inJustDecodeBounds = false;
-            options.inDither = false;
-            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            options.inPreferredConfig = Bitmap.Config.RGB_565;
             //根据options参数，减少所需要的内存
             bm = BitmapFactory.decodeFileDescriptor(fd, null, options);
         } catch (FileNotFoundException e) {
