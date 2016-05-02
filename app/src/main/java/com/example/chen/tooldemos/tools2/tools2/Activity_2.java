@@ -9,10 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.media.audiofx.Visualizer;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -25,7 +22,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.chen.tooldemos.R;
 import com.example.chen.tooldemos.tools2.tools2.music.Constant;
@@ -44,7 +40,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private long duration;//歌曲现在的间隔
     private int flag;
 
-    private int id;//MediaPlayer的id
+    private int mediaid;//MediaPlayer的id
     private SharedPreferences preferences;
     private SharedPreferences.Editor editor;
 
@@ -162,11 +158,6 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private void setAllUi() {
         musicProgress.setProgress(currentTime);
         musicProgress.setMax((int) duration);
-        if (flag == Constant.PLAYING_MSG) {
-            Toast.makeText(this, "正在播放", Toast.LENGTH_SHORT).show();
-        } else if (flag == Constant.PLAY_MSG) {
-            play();
-        }
     }
 
     private void initService() {
@@ -183,15 +174,15 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
 
     //默认顺序播放
-    private void play() {
-        //默认顺序播放
-//        repeatMode(Constant.ONE_ORDER_REPEAT);
-        Intent intent = new Intent(this, MusicService.class);
-        intent.putExtra("path", path);
-        intent.putExtra("position", position);
-        intent.putExtra("MSG", flag);
-        startService(intent);
-    }
+//    private void play() {
+//        //默认顺序播放
+////        repeatMode(Constant.ONE_ORDER_REPEAT);
+//        Intent intent = new Intent(this, MusicService.class);
+//        intent.putExtra("path", path);
+//        intent.putExtra("position", position);
+//        intent.putExtra("MSG", flag);
+//        startService(intent);
+//    }
 
     private void setupAudioView() {
         mAudioView = (AudioView) findViewById(R.id.audioView);
@@ -271,13 +262,12 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         super.onResume();
         Log.d("onResume", "it it onResume");
 
-        if (mAudioView == null || mVisualizer == null) {
-            preferences = getSharedPreferences("musicPreference", MODE_WORLD_READABLE);
-            id = preferences.getInt("id", 1);
-            setupVisualizer(id);
-            setupAudioView();
-            renderScriptBackground();
-        }
+//        if (mAudioView == null || mVisualizer == null) {
+//            preferences = getSharedPreferences("musicPreference", MODE_WORLD_READABLE);
+//            mediaid = preferences.getInt("id", -1);
+//            setupVisualizer(mediaid);
+//            setupAudioView();
+//        }
     }
 
     @Override
@@ -304,7 +294,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         Intent intent = new Intent(this, MusicService.class);
         stopService(intent);
 
-        mVisualizer.setEnabled(false);
+//        mVisualizer.setEnabled(false);
     }
 
     @Override
@@ -414,9 +404,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         intent.putExtra("MSG", Constant.NEXT_MSG);
         startService(intent);
 
-        mAudioView.setCover(music);
-        renderScriptBackground();
-        musicContainer.changeSelectedView(position);
+        updateAll();
     }
 
     private void previousMusic() {
@@ -442,9 +430,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         intent.putExtra("MSG", Constant.PREVIOUS_MSG);
         startService(intent);
 
-        mAudioView.setCover(music);
-        renderScriptBackground();
-        musicContainer.changeSelectedView(position);
+        updateAll();
     }
 
     //随机选取歌曲
@@ -454,21 +440,31 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     }
 
     public void clickMusicToService(int id) {
-        path = musics.get(id).getPath();
-        Music music = musics.get(id);
+        position = id;
         playBtn.setBackgroundResource(R.drawable.pause_btn_pressed);
+
+        path = musics.get(position).getPath();
         Intent intent = new Intent(this, MusicService.class);
-        intent.putExtra("position", id);
+        intent.putExtra("position", position);
         intent.putExtra("path", path);
         intent.putExtra("MSG", Constant.NEXT_MSG);
         startService(intent);
-        mAudioView.setCover(music);
-        renderScriptBackground();
-        musicContainer.changeSelectedView(id);
+
+        updateAll();
     }
 
     public void renderScriptBackground() {
         mAudioView.setMutedCoverBitmap(background);
+    }
+
+    public void updateAll(){
+        //封面变更
+        Music music = musics.get(position);
+        mAudioView.setCover(music);
+        //背景变更
+        renderScriptBackground();
+        //TextView item选中
+        musicContainer.changeSelectedView(position);
     }
 
     //广播接收类PlayerReciever
@@ -486,18 +482,16 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 musicProgress.setMax((int) duration);
                 tv_duration.setText(formatTime(duration));
             } else if (action.equals(UPDATE_ACTION)) {
-                position = intent.getIntExtra("current", -1);
+                position = intent.getIntExtra("current", 0);
                 path = musics.get(position).getPath();
                 tv_musictitle.setText(musics.get(position).getTitle());
-
-
-                mAudioView.setCover(musics.get(position));
-                renderScriptBackground();
-                musicContainer.changeSelectedView(position);
+                updateAll();
             } else if (action.equals(MUSIC_ID)) {
-                System.out.println(id + "***********id is " + id);
-                setupVisualizer(id);
+                mediaid =intent.getIntExtra("mediaid", -1);
+                System.out.println(mediaid + "***********id is " + mediaid);
+                setupVisualizer(mediaid);
                 setupAudioView();
+                renderScriptBackground();
             }
 
         }
