@@ -146,8 +146,9 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private void initService() {
         Intent intent = new Intent();
         intent.putExtra("position", position);
+        intent.putExtra("currentTime" , currentTime);
         intent.putExtra("path", musics.get(position).getPath());
-        intent.putExtra("MSG", Constant.PLAY_MSG);
+        intent.putExtra("MSG", Constant.PROGRASS_MSG);
         intent.setClass(this, MusicService.class);
         startService(intent);
 
@@ -237,15 +238,16 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d("onPause" , "it it onPause");
+        Log.d("onPause", "it it onPause");
     }
 
     @Override
     public void onResume(){
         super.onResume();
-        Log.d("onResume" , "it it onResume");
+        Log.d("onResume", "it it onResume");
 
         if(mAudioView == null || mVisualizer == null){
+            preferences = getSharedPreferences("musicPreference", MODE_WORLD_READABLE);
             id = preferences.getInt("id" , -1);
             setupVisualizer(id);
             setupAudioView();

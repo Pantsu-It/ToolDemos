@@ -209,6 +209,7 @@ public class MusicService extends Service{
 
     @Override
     public void onDestroy() {
+        super.onDestroy();
         if (musicPlayer != null) {
             musicPlayer.stop();
             musicPlayer.release();

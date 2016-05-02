@@ -1,6 +1,7 @@
 package com.example.chen.tooldemos.tools2.tools2.music;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
@@ -27,6 +28,7 @@ public class MusicListViewContainer extends LinearLayout {
     private List<Music> musics = null;
     private MusicProvider musicProvider = null;
     private int SongNum = 0;
+    private SharedPreferences sp;
 
     //    private ArrayList<TextView> tvs_line1,tvs_line2,tvs_line3;
     private ArrayList<Map<Integer, TextView>> tvs;
@@ -63,6 +65,8 @@ public class MusicListViewContainer extends LinearLayout {
         line2 = (LinearLayout) mView.findViewById(R.id.line2);
         line3 = (LinearLayout) mView.findViewById(R.id.line3);
         tvs = new ArrayList<>();
+        sp =  context.getSharedPreferences("musicPreference", context.MODE_WORLD_READABLE);
+        SongNum = sp.getInt("position", 0);
     }
 
     public void addMusicProvider(MusicProvider musicProvider) {
@@ -110,6 +114,10 @@ public class MusicListViewContainer extends LinearLayout {
     private void addTextViewToMap(Music music, int position) {
         final MusicListTextView textView = new MusicListTextView(context);
         textView.setId(position);
+        if(position == SongNum){
+            textView.setSelected(true);
+            lastText = textView;
+        }
         textView.setGravity(Gravity.FILL_VERTICAL);
         textView.setBackgroundResource(R.drawable.btn_title_shape);
         textView.setOnClickListener(new OnClickListener() {
