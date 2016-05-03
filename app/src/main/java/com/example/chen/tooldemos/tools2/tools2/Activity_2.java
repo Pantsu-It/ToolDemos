@@ -88,8 +88,17 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     public Handler AnimHandler = new Handler(){
         @Override
         public void handleMessage(Message msg){
-            musicContainer.setVisibility(View.GONE);
-            background.requestLayout();
+            int what = msg.what;
+            switch (what){
+                case 0:
+                    musicContainer.setVisibility(View.GONE);
+                    background.requestLayout();
+                    break;
+                case 1:
+                    mAudioView.setVisibility(View.GONE);
+                    background.requestLayout();
+                    break;
+            }
         }
     };
 
@@ -143,6 +152,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         previousBtn.setOnClickListener(this);
         modeBtn.setOnClickListener(this);
         listBtn.setOnClickListener(this);
+//        mAudioView.setOnClickListener(this);
 
         preferences = getSharedPreferences("musicPreference", MODE_WORLD_READABLE);
         editor = preferences.edit();
@@ -278,24 +288,9 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        Intent intent = new Intent(this, MusicService.class);
         switch (v.getId()) {
             case R.id.btn_play:
-                if (!isPlaying) {
-                    isPlaying = true;
-                    playBtn.setBackgroundResource(R.drawable.pause_btn_pressed);
-                    mAudioView.setPlaying(true);
-                    intent.putExtra("MSG", Constant.CONTINUE_MSG);
-                    startService(intent);
-                    System.out.println(" this is isplaying");
-                } else if (isPlaying) {
-                    isPlaying = false;
-                    playBtn.setBackgroundResource(R.drawable.play_btn_pressed);
-                    mAudioView.setPlaying(false);
-                    intent.putExtra("MSG", Constant.PAUSE_MSG);
-                    startService(intent);
-                    System.out.println(" this is !!!!isplaying");
-                }
+                playmusic();
                 break;
             case R.id.btn_previous:
                 previousMusic();
@@ -313,6 +308,38 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 System.out.println("Animation is coming");
                 openListAnimation();
                 break;
+            case R.id.audioView:
+                System.out.println("Animation disappear is coming");
+                disappearAudioViewAndLyricsAppear();
+                break;
+        }
+    }
+
+    //消失audioView并出现歌词
+    private void disappearAudioViewAndLyricsAppear() {
+
+        Animation animation = AnimationUtils.loadAnimation(this,R.anim.audioview_disappear);
+        mAudioView.startAnimation(animation);
+        AnimHandler.sendEmptyMessageDelayed(1, 800);
+    }
+
+
+    private void playmusic() {
+        Intent intent = new Intent(this, MusicService.class);
+        if (!isPlaying) {
+            isPlaying = true;
+            playBtn.setBackgroundResource(R.drawable.pause_btn_pressed);
+            mAudioView.setPlaying(true);
+            intent.putExtra("MSG", Constant.CONTINUE_MSG);
+            startService(intent);
+            System.out.println(" this is isplaying");
+        } else if (isPlaying) {
+            isPlaying = false;
+            playBtn.setBackgroundResource(R.drawable.play_btn_pressed);
+            mAudioView.setPlaying(false);
+            intent.putExtra("MSG", Constant.PAUSE_MSG);
+            startService(intent);
+            System.out.println(" this is !!!!isplaying");
         }
     }
 
@@ -361,6 +388,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         sendBroadcast(intent);
     }
 
+    //下一首歌
     private void nextMusic() {
         isPlaying = true;
         playBtn.setBackgroundResource(R.drawable.pause_btn_pressed);
@@ -375,17 +403,12 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         }
         if (position > musics.size() - 1)
             position = 0;
-        Music music = musics.get(position);
-        path = music.getPath();
-        Intent intent = new Intent(this, MusicService.class);
-        intent.putExtra("path", path);
-        intent.putExtra("position", position);
-        intent.putExtra("MSG", Constant.NEXT_MSG);
-        startService(intent);
 
+        sendMessageToService(Constant.NEXT_MSG);
         updateAll();
     }
 
+    //上一首歌
     private void previousMusic() {
         isPlaying = true;
         playBtn.setBackgroundResource(R.drawable.pause_btn_pressed);
@@ -401,13 +424,8 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
         if (position < 0)
             position = musics.size() - 1;
-        Music music = musics.get(position);
-        path = music.getPath();
-        Intent intent = new Intent(this, MusicService.class);
-        intent.putExtra("path", path);
-        intent.putExtra("position", position);
-        intent.putExtra("MSG", Constant.PREVIOUS_MSG);
-        startService(intent);
+
+        sendMessageToService(Constant.PREVIOUS_MSG);
 
         updateAll();
     }
@@ -418,18 +436,26 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         return index;
     }
 
+    //监听并回应list中的点击事件
     public void clickMusicToService(int id) {
         position = id;
         playBtn.setBackgroundResource(R.drawable.pause_btn_pressed);
 
-        path = musics.get(position).getPath();
-        Intent intent = new Intent(this, MusicService.class);
-        intent.putExtra("position", position);
-        intent.putExtra("path", path);
-        intent.putExtra("MSG", Constant.NEXT_MSG);
-        startService(intent);
-
+        mAudioView.setPlaying(false);
+        //发送position让service点歌
+        sendMessageToService(Constant.NEXT_MSG);
         updateAll();
+    }
+
+    //发送消息给Service
+    public void sendMessageToService(int message){
+        Music music = musics.get(position);
+        path = music.getPath();
+        Intent intent = new Intent(this, MusicService.class);
+        intent.putExtra("path", path);
+        intent.putExtra("position", position);
+        intent.putExtra("MSG", message);
+        startService(intent);
     }
 
     public void renderScriptBackground() {
