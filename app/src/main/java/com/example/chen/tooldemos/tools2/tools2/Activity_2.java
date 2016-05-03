@@ -71,7 +71,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private Visualizer mVisualizer;
     // 系统的均衡器
     private Equalizer mEqualizer;
-    private int maxCaptureSize;
+    private int captureSize;
 
     // 界面按钮
     private LinearLayout background;
@@ -195,19 +195,19 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
     private void setupVisualizer(int mediaId) {
         mVisualizer = new Visualizer(mediaId);
-        maxCaptureSize = Visualizer.getCaptureSizeRange()[1];
-        mVisualizer.setCaptureSize(maxCaptureSize);
+        captureSize = 640;
+        mVisualizer.setCaptureSize(captureSize);
         mVisualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
             @Override
             public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
-                mAudioView.updateVisualizer2(waveform);
+//                mAudioView.updateVisualizer2(waveform);
             }
 
             @Override
             public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
-//                updateVisualizer(fft);
+                updateVisualizer(fft);
             }
-        }, Visualizer.getMaxCaptureRate() / 2, true, true);
+        }, Visualizer.getMaxCaptureRate()/2, true, true);
         mVisualizer.setEnabled(true);
     }
 
@@ -220,10 +220,6 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         mEqualizer = new Equalizer(0, mediaId);
         // 启用均衡控制效果
         mEqualizer.setEnabled(true);
-        // 获取均衡控制器支持最小值和最大值
-        final short minEQLevel = mEqualizer.getBandLevelRange()[0];//第一个下标为最低的限度范围
-        short maxEQLevel = mEqualizer.getBandLevelRange()[1];  // 第二个下标为最高的限度范围
-        // 获取均衡控制器支持的所有频率
     }
 
     public void updateVisualizer(byte[] fft) {

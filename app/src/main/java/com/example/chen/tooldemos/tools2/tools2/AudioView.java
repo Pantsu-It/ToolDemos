@@ -82,12 +82,11 @@ public class AudioView extends RelativeLayout {
                     mFFTLines.resetAlpha(1);
                     mCover.beat();
                     mBorderInner.beat();
+                    mBorderOuter.beat();
                     break;
                 case 0x2:
                     mCover.beat();
                     mBorderInner.beat();
-                    break;
-                case 0x3:
                     mBorderOuter.beat();
                     break;
             }
@@ -125,7 +124,9 @@ public class AudioView extends RelativeLayout {
                 new Timer().schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        beatIt();
+                        if (!isPlaying()) {
+                            mHandler.sendEmptyMessage(0x2);
+                        }
                     }
                 }, 0, 1000);
             }
@@ -136,8 +137,7 @@ public class AudioView extends RelativeLayout {
         rect.set(0, 0, width, height);
         startDegree = -135;
 
-        lineSize = 64;
-        lineWidth = 16;
+        lineSize = 128;
         bytes = new float[lineSize];
         border_rate_a = 0.16f;
         border_rate_b = 0.12f;
@@ -161,6 +161,7 @@ public class AudioView extends RelativeLayout {
         rectB.set(0, 0, radius_b * 2, radius_b * 2);
 
         lineLengthMax = base / 2 - radius_baseline;
+        lineWidth = rectLinesCrop.width() * 3.1416f / lineSize;
 
         RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams((int) rect.width(), (int) rect.height());
         params1.addRule(RelativeLayout.CENTER_IN_PARENT);
@@ -231,25 +232,25 @@ public class AudioView extends RelativeLayout {
     public void beatIt() {
         if (isPlaying()) {
             mHandler.sendEmptyMessage(0x1);
-            mHandler.sendEmptyMessage(0x3);
         } else {
             mHandler.sendEmptyMessage(0x2);
-            mHandler.sendEmptyMessage(0x3);
         }
     }
 
     private static final float decadeRate = 0.84f;
 
     private float valley;
-    private boolean debug = true;
 
     public void updateVisualizer2(byte[] wave) {
-        lineLengthRate = 1f;
+        lineLengthRate = lineLengthMax / 128f;
 
         // waveForm range at -128~127
         int[] wave2 = new int[wave.length];
         for (int i = 0; i < wave.length; i++) {
-            wave2[i] = wave[i] + 128;
+            if (wave[i] >= 0)
+                wave2[i] = 127 - wave[i];
+            else
+                wave2[i] = 128 + wave[i];
         }
 
         float heavyrecord = (wave2[2] * 1.2f + wave2[0] * 1.1f) / 2;
@@ -258,10 +259,8 @@ public class AudioView extends RelativeLayout {
         for (int i = bytes.length - 1; i >= 0; i--) {
             if (i > 59)
                 tmpavgpinlv += wave2[i * 5];
-            if (debug)
-                bytes[i] = wave2[i * 5] / 255f * lineLengthMax;
-            else if (bytes[i] < wave2[i * 5] / 255 * lineLengthMax - 100) {
-                bytes[i] = wave2[i * 5] / 255f * lineLengthMax;
+            if (bytes[i] < wave2[i * 5] - 100) {
+                bytes[i] = wave2[i * 5];
             } else {
                 bytes[i] *= decadeRate;
             }
@@ -274,13 +273,13 @@ public class AudioView extends RelativeLayout {
             valley = averagepinlv;
         }
 
-        mBorderInner.invalidate();
-        mBorderOuter.invalidate();
         mFFTLines.invalidate();
-        mCover.invalidate();
     }
 
+
     public void updateVisualizer(float[] fftForm) {
+        lineLengthRate = 2;
+
         int beatCount = 0;
         for (int i = 0; i < lineSize; ++i) {
             float decade = (byte) (bytes[i] * decadeRate);
@@ -297,10 +296,7 @@ public class AudioView extends RelativeLayout {
             beatIt();
         }
 
-        mBorderInner.invalidate();
-        mBorderOuter.invalidate();
         mFFTLines.invalidate();
-        mCover.invalidate();
     }
 
     public int getRequestSize() {
