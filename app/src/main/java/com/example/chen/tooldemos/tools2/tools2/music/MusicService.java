@@ -80,7 +80,7 @@ public class MusicService extends Service{
 
         Intent intent =new Intent();
         intent.setAction(MUSIC_ID);
-        intent.putExtra("mediaid", id);
+        intent.putExtra("mediaId", id);
         sendBroadcast(intent);
 
         musicProvider = new MusicProvider(this);

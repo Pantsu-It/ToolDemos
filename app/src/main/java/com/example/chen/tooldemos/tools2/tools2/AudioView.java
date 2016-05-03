@@ -71,7 +71,6 @@ public class AudioView extends RelativeLayout {
     private FFTLines mFFTLines;
     private Cover mCover;
 
-    //background: 249,248,246
 
     // static???
     Handler mHandler = new Handler() {

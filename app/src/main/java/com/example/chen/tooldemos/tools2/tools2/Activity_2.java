@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
+import android.media.audiofx.Equalizer;
 import android.media.audiofx.Visualizer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -41,7 +42,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private long duration;//歌曲现在的间隔
     private int flag;
 
-    private int mediaid;//MediaPlayer的id
+    private int mediaId;//MediaPlayer的id
     private SharedPreferences preferences;
     private SharedPreferences.Editor editor;
 
@@ -61,22 +62,25 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     public static final String MUSIC_ID = "anction.MUSIC_ID";
 
 
-    //歌曲提供处
+    // 歌曲提供处
     private PlayerReceiver myPlayerRecevier;
     private ArrayList<Music> musics;
     private MusicListViewContainer musicContainer;
     private MusicProvider musicProvider;
+    // 系统的频谱
     private Visualizer mVisualizer;
+    // 系统的均衡器
+    private Equalizer mEqualizer;
     private int maxCaptureSize;
 
-    //界面按钮
+    // 界面按钮
     private LinearLayout background;
     private TextView playBtn, nextBtn, previousBtn, modeBtn, listBtn;
     private SeekBar musicProgress;
     private TextView tv_current, tv_duration, tv_musictitle;
 
 
-    //唱片
+    // 唱片
     private AudioView mAudioView;
 
     private DisplayMetrics mMetrics;
@@ -85,11 +89,11 @@ public class Activity_2 extends Activity implements View.OnClickListener {
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
 
-    public Handler AnimHandler = new Handler(){
+    public Handler AnimHandler = new Handler() {
         @Override
-        public void handleMessage(Message msg){
+        public void handleMessage(Message msg) {
             int what = msg.what;
-            switch (what){
+            switch (what) {
                 case 0:
                     musicContainer.setVisibility(View.GONE);
                     background.requestLayout();
@@ -189,8 +193,8 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         mAudioView.setPlaying(true);
     }
 
-    private void setupVisualizer(int id) {
-        mVisualizer = new Visualizer(id);
+    private void setupVisualizer(int mediaId) {
+        mVisualizer = new Visualizer(mediaId);
         maxCaptureSize = Visualizer.getCaptureSizeRange()[1];
         mVisualizer.setCaptureSize(maxCaptureSize);
         mVisualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
@@ -205,6 +209,21 @@ public class Activity_2 extends Activity implements View.OnClickListener {
             }
         }, Visualizer.getMaxCaptureRate() / 2, true, true);
         mVisualizer.setEnabled(true);
+    }
+
+    /**
+     * 初始化均衡控制器
+     */
+    private void setupEqualizer(int mediaId) {
+        // 以MediaPlayer的AudioSessionId创建Equalizer
+        // 相当于设置Equalizer负责控制该MediaPlayer
+        mEqualizer = new Equalizer(0, mediaId);
+        // 启用均衡控制效果
+        mEqualizer.setEnabled(true);
+        // 获取均衡控制器支持最小值和最大值
+        final short minEQLevel = mEqualizer.getBandLevelRange()[0];//第一个下标为最低的限度范围
+        short maxEQLevel = mEqualizer.getBandLevelRange()[1];  // 第二个下标为最高的限度范围
+        // 获取均衡控制器支持的所有频率
     }
 
     public void updateVisualizer(byte[] fft) {
@@ -265,6 +284,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         super.onStart();
 
     }
+
     @Override
     public void onStop() {
         super.onStop();
@@ -318,7 +338,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     //消失audioView并出现歌词
     private void disappearAudioViewAndLyricsAppear() {
 
-        Animation animation = AnimationUtils.loadAnimation(this,R.anim.audioview_disappear);
+        Animation animation = AnimationUtils.loadAnimation(this, R.anim.audioview_disappear);
         mAudioView.startAnimation(animation);
         AnimHandler.sendEmptyMessageDelayed(1, 800);
     }
@@ -345,17 +365,17 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
     //将列表显现
     private void openListAnimation() {
-        if(!isAppear){
+        if (!isAppear) {
             isAppear = true;
             musicContainer.setVisibility(View.VISIBLE);
             background.requestLayout();
             Animation anim = AnimationUtils.loadAnimation(this, R.anim.list_appear);
             musicContainer.startAnimation(anim);
-        }else{
+        } else {
             isAppear = false;
             Animation anim = AnimationUtils.loadAnimation(this, R.anim.list_disappear);
             musicContainer.startAnimation(anim);
-            AnimHandler.sendEmptyMessageDelayed(0,100);
+            AnimHandler.sendEmptyMessageDelayed(0, 100);
         }
     }
 
@@ -448,7 +468,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     }
 
     //发送消息给Service
-    public void sendMessageToService(int message){
+    public void sendMessageToService(int message) {
         Music music = musics.get(position);
         path = music.getPath();
         Intent intent = new Intent(this, MusicService.class);
@@ -462,7 +482,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         mAudioView.setMutedCoverBitmap(background);
     }
 
-    public void updateAll(){
+    public void updateAll() {
         //封面变更
         Music music = musics.get(position);
         mAudioView.setCover(music);
@@ -492,9 +512,10 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 tv_musictitle.setText(musics.get(position).getTitle());
                 updateAll();
             } else if (action.equals(MUSIC_ID)) {
-                mediaid =intent.getIntExtra("mediaid", -1);
-                System.out.println(mediaid + "***********id is " + mediaid);
-                setupVisualizer(mediaid);
+                mediaId = intent.getIntExtra("mediaId", -1);
+                System.out.println(mediaId + "***********id is " + mediaId);
+                setupVisualizer(mediaId);
+                setupEqualizer(mediaId);
                 setupAudioView();
                 renderScriptBackground();
             }
