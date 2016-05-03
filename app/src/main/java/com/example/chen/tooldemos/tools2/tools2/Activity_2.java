@@ -201,13 +201,14 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         mVisualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
             @Override
             public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
+                mAudioView.updateVisualizer2(waveform);
             }
 
             @Override
             public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
-                updateVisualizer(fft);
+//                updateVisualizer(fft);
             }
-        }, Visualizer.getMaxCaptureRate() / 2, false, true);
+        }, Visualizer.getMaxCaptureRate() / 2, true, true);
         mVisualizer.setEnabled(true);
     }
 

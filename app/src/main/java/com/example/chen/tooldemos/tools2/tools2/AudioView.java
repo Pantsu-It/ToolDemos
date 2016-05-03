@@ -54,6 +54,7 @@ public class AudioView extends RelativeLayout {
 
     private int startDegree;
     private float lineLengthRate;
+    private float lineLengthMax;
     private float lineWidth;
     private float radius_baseline;
     private float border_rate_a, border_rate_b;
@@ -138,7 +139,6 @@ public class AudioView extends RelativeLayout {
 
         lineSize = 64;
         lineWidth = 16;
-        lineLengthRate = 8f;
         bytes = new float[lineSize];
         border_rate_a = 0.16f;
         border_rate_b = 0.12f;
@@ -160,6 +160,8 @@ public class AudioView extends RelativeLayout {
         rectInner.set(0, 0, radius_inner * 2, radius_inner * 2);
         rectA.set(0, 0, radius_a * 2, radius_a * 2);
         rectB.set(0, 0, radius_b * 2, radius_b * 2);
+
+        lineLengthMax = base / 2 - radius_baseline;
 
         RelativeLayout.LayoutParams params1 = new RelativeLayout.LayoutParams((int) rect.width(), (int) rect.height());
         params1.addRule(RelativeLayout.CENTER_IN_PARENT);
@@ -239,7 +241,45 @@ public class AudioView extends RelativeLayout {
 
     private static final float decadeRate = 0.84f;
 
-    int sum;
+    private float valley;
+    private boolean debug = true;
+
+    public void updateVisualizer2(byte[] wave) {
+        lineLengthRate = 1f;
+
+        // waveForm range at -128~127
+        int[] wave2 = new int[wave.length];
+        for (int i = 0; i < wave.length; i++) {
+            wave2[i] = wave[i] + 128;
+        }
+
+        float heavyrecord = (wave2[2] * 1.2f + wave2[0] * 1.1f) / 2;
+        float tmpavgpinlv = 0;
+        float averagepinlv;
+        for (int i = bytes.length - 1; i >= 0; i--) {
+            if (i > 59)
+                tmpavgpinlv += wave2[i * 5];
+            if (debug)
+                bytes[i] = wave2[i * 5] / 255f * lineLengthMax;
+            else if (bytes[i] < wave2[i * 5] / 255 * lineLengthMax - 100) {
+                bytes[i] = wave2[i * 5] / 255f * lineLengthMax;
+            } else {
+                bytes[i] *= decadeRate;
+            }
+        }
+        averagepinlv = tmpavgpinlv / 69 * 0.8f + heavyrecord * 1.5f;
+        if (averagepinlv > valley + 17) {
+            valley = averagepinlv;
+            beatIt();
+        } else if (averagepinlv < valley) {
+            valley = averagepinlv;
+        }
+
+        mBorderInner.invalidate();
+        mBorderOuter.invalidate();
+        mFFTLines.invalidate();
+        mCover.invalidate();
+    }
 
     public void updateVisualizer(float[] fftForm) {
         int beatCount = 0;
