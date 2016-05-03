@@ -78,6 +78,10 @@ public class MusicService extends Service{
         editor.putInt("id", id);
         editor.commit();
 
+        Intent intent =new Intent();
+        intent.setAction(MUSIC_ID);
+        intent.putExtra("mediaid", id);
+        sendBroadcast(intent);
 
         musicProvider = new MusicProvider(this);
         musics = (ArrayList<Music>) musicProvider.getList();
