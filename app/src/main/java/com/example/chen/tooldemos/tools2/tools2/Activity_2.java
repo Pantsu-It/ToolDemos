@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.media.audiofx.Visualizer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -112,8 +113,9 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         isAppear = false;
 
         mMetrics = getMetrics(this);
-
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
+
 
     //初始化组件
     private void init() {
@@ -151,11 +153,6 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         duration = musics.get(position).getDuaration();
         currentTime = preferences.getInt("currentTime", 0);
 
-
-        setAllUi();
-    }
-
-    private void setAllUi() {
         musicProgress.setProgress(currentTime);
         musicProgress.setMax((int) duration);
     }
@@ -171,18 +168,6 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
         System.out.println("Service Start!!");
     }
-
-
-    //默认顺序播放
-//    private void play() {
-//        //默认顺序播放
-////        repeatMode(Constant.ONE_ORDER_REPEAT);
-//        Intent intent = new Intent(this, MusicService.class);
-//        intent.putExtra("path", path);
-//        intent.putExtra("position", position);
-//        intent.putExtra("MSG", flag);
-//        startService(intent);
-//    }
 
     private void setupAudioView() {
         mAudioView = (AudioView) findViewById(R.id.audioView);
@@ -263,12 +248,6 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         super.onResume();
         Log.d("onResume", "it it onResume");
 
-//        if (mAudioView == null || mVisualizer == null) {
-//            preferences = getSharedPreferences("musicPreference", MODE_WORLD_READABLE);
-//            mediaid = preferences.getInt("id", -1);
-//            setupVisualizer(mediaid);
-//            setupAudioView();
-//        }
     }
 
     @Override
@@ -295,7 +274,6 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         Intent intent = new Intent(this, MusicService.class);
         stopService(intent);
 
-//        mVisualizer.setEnabled(false);
     }
 
     @Override
