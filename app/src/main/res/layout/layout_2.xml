@@ -7,7 +7,7 @@
 
 
     <RelativeLayout
-
+        android:id="@+id/layout_audioAndlyrics"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_gravity="center_vertical"
@@ -18,6 +18,15 @@
             android:id="@+id/audioView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            />
+        <com.example.chen.tooldemos.tools2.tools2.music.lyrics.LyricView
+            android:id="@+id/tv_lyrics"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="100dp"
+            android:layout_centerHorizontal="true"
+            android:alpha="0"
             />
 
         <TextView

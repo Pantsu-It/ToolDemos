@@ -3,6 +3,7 @@ package com.example.chen.tooldemos.tools2.tools2;
  * Created by Pants on 2016/4/20.
  */
 
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -31,8 +32,12 @@ import com.example.chen.tooldemos.tools2.tools2.music.Music;
 import com.example.chen.tooldemos.tools2.tools2.music.MusicListViewContainer;
 import com.example.chen.tooldemos.tools2.tools2.music.MusicProvider;
 import com.example.chen.tooldemos.tools2.tools2.music.MusicService;
+import com.example.chen.tooldemos.tools2.tools2.music.lyrics.LrcContent;
+import com.example.chen.tooldemos.tools2.tools2.music.lyrics.LyricView;
+import com.example.chen.tooldemos.tools2.tools2.music.lyrics.LyricsProcess;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Activity_2 extends Activity implements View.OnClickListener {
 
@@ -40,7 +45,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private int position;//歌曲在musics的位置
     private int currentTime;//歌曲的当前时间
     private long duration;//歌曲现在的间隔
-    private int flag;
+    private int lyricIndex = 0;
 
     private int mediaId;//MediaPlayer的id
     private SharedPreferences preferences;
@@ -50,16 +55,17 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private int songModeNum = 2;// 1 代表 单曲播放 2 代表 顺序播放 3 代表 随机播放
 
     private boolean isPlaying;//正在播放
-    private boolean isAppear;
+    private boolean isAppear;//歌单是否出现
+    private boolean hasLyric;//歌词是否出现
+    private boolean isLyricsAppear;
+
 
     public static final String UPDATE_ACTION = "action.UPDATE_ACTION";//更新动作
     public static final String CTL_ACTION = "action.CTL_ACTION";//控制动作
     public static final String MUSIC_CURRENT = "action.MUSIC_CURRENT";//音乐当前shi时间改变动作
-    public static final String MUSIC_PLAYING = "action.MUSIC_PLAYING";//音乐正在播放动作
     public static final String MUSIC_DURATION = "action.MUSIC_DURATION";//音乐播放长度动作
-    public static final String REPEAT_ACTION = "action.REPEAT_ACTION";//音乐重复播放动作
-    public static final String SHUFFLE_ACTION = "action.SHUFFLE_ACTION";//音乐随机播放动作
     public static final String MUSIC_ID = "anction.MUSIC_ID";
+    public static final String LYRIC_TIME = "anction.LYRIC_TIME";
 
 
     // 歌曲提供处
@@ -73,7 +79,12 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private Equalizer mEqualizer;
     private int captureSize;
 
+    private LyricsProcess lyricsProcess;
+    private List<LrcContent> lrclist;
+
     // 界面按钮
+    private RelativeLayout coverBackground;
+    private LyricView lyricView;
     private LinearLayout background;
     private TextView playBtn, nextBtn, previousBtn, modeBtn, listBtn;
     private SeekBar musicProgress;
@@ -98,11 +109,16 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                     musicContainer.setVisibility(View.GONE);
                     background.requestLayout();
                     break;
-                case 1:
-                    mAudioView.setVisibility(View.GONE);
-                    background.requestLayout();
-                    break;
             }
+        }
+    };
+
+    Handler lyricHandler = new Handler(){
+
+        @Override
+        public void handleMessage(Message msg){
+            lyricView.setIndex(lrcIndex());
+            lyricView.invalidate();
         }
     };
 
@@ -124,6 +140,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
         isPlaying = true;
         isAppear = false;
+        isLyricsAppear = false;
 
         mMetrics = getMetrics(this);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
@@ -132,6 +149,8 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
     //初始化组件
     private void init() {
+        coverBackground = (RelativeLayout) findViewById(R.id.layout_audioAndlyrics);
+        lyricView = (LyricView) findViewById(R.id.tv_lyrics);
         background = (LinearLayout) findViewById(R.id.layout_activity);
         listBtn = (TextView) findViewById(R.id.btn_list);
         modeBtn = (TextView) findViewById(R.id.btn_mode);
@@ -156,7 +175,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         previousBtn.setOnClickListener(this);
         modeBtn.setOnClickListener(this);
         listBtn.setOnClickListener(this);
-//        mAudioView.setOnClickListener(this);
+        coverBackground.setOnClickListener(this);
 
         preferences = getSharedPreferences("musicPreference", MODE_WORLD_READABLE);
         editor = preferences.edit();
@@ -169,6 +188,9 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
         musicProgress.setProgress(currentTime);
         musicProgress.setMax((int) duration);
+
+        updateLyric();
+        updateLyricByTime();
     }
 
     private void initService() {
@@ -220,6 +242,10 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         mEqualizer = new Equalizer(0, mediaId);
         // 启用均衡控制效果
         mEqualizer.setEnabled(true);
+        // 获取均衡控制器支持最小值和最大值
+        final short minEQLevel = mEqualizer.getBandLevelRange()[0];//第一个下标为最低的限度范围
+        short maxEQLevel = mEqualizer.getBandLevelRange()[1];  // 第二个下标为最高的限度范围
+        // 获取均衡控制器支持的所有频率
     }
 
     public void updateVisualizer(byte[] fft) {
@@ -324,7 +350,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 System.out.println("Animation is coming");
                 openListAnimation();
                 break;
-            case R.id.audioView:
+            case R.id.layout_audioAndlyrics:
                 System.out.println("Animation disappear is coming");
                 disappearAudioViewAndLyricsAppear();
                 break;
@@ -333,10 +359,19 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
     //消失audioView并出现歌词
     private void disappearAudioViewAndLyricsAppear() {
-
-        Animation animation = AnimationUtils.loadAnimation(this, R.anim.audioview_disappear);
-        mAudioView.startAnimation(animation);
-        AnimHandler.sendEmptyMessageDelayed(1, 800);
+        if(!isLyricsAppear){
+            ObjectAnimator anim = ObjectAnimator.ofFloat(mAudioView,"alpha",mAudioView.getAlpha(),0);
+            anim.start();
+            ObjectAnimator anim1 = ObjectAnimator.ofFloat(lyricView, "alpha", lyricView.getAlpha(),1);
+            anim1.start();
+            isLyricsAppear = true;
+        }else{
+            ObjectAnimator anim = ObjectAnimator.ofFloat(mAudioView,"alpha",mAudioView.getAlpha(),1);
+            anim.start();
+            ObjectAnimator anim1 = ObjectAnimator.ofFloat(lyricView, "alpha", lyricView.getAlpha(),0);
+            anim1.start();
+            isLyricsAppear =false;
+        }
     }
 
 
@@ -349,7 +384,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
             intent.putExtra("MSG", Constant.CONTINUE_MSG);
             startService(intent);
             System.out.println(" this is isplaying");
-        } else if (isPlaying) {
+        } else {
             isPlaying = false;
             playBtn.setBackgroundResource(R.drawable.play_btn_pressed);
             mAudioView.setPlaying(false);
@@ -414,7 +449,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 position++;
                 break;
             case 3:
-                position = getRandomIndex(musics.size() - 1);
+                position = getRandomIndex(musics.size());
                 break;
         }
         if (position > musics.size() - 1)
@@ -434,7 +469,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 position--;
                 break;
             case 3:
-                position = getRandomIndex(musics.size() - 1);
+                position = getRandomIndex(musics.size());
                 break;
         }
 
@@ -448,8 +483,8 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
     //随机选取歌曲
     private int getRandomIndex(int end) {
-        int index = (int) (Math.random() * end);
-        return index;
+        int indexd = (int) (Math.random() * end);
+        return indexd;
     }
 
     //监听并回应list中的点击事件
@@ -486,6 +521,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         renderScriptBackground();
         //TextView item选中
         musicContainer.changeSelectedView(position);
+        lyricIndex = 0;
     }
 
     //广播接收类PlayerReciever
@@ -495,9 +531,10 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (action.equalsIgnoreCase(MUSIC_CURRENT)) {
-                currentTime = intent.getIntExtra("currentTime", -1);
+                currentTime = intent.getIntExtra("currentTime", 0);
                 musicProgress.setProgress(currentTime);
                 tv_current.setText(formatTime(currentTime));
+                updateLyricByTime();
             } else if (action.equals(MUSIC_DURATION)) {
                 duration = intent.getIntExtra("duration", -1);
                 musicProgress.setMax((int) duration);
@@ -506,6 +543,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 position = intent.getIntExtra("current", 0);
                 path = musics.get(position).getPath();
                 tv_musictitle.setText(musics.get(position).getTitle());
+                updateLyric();
                 updateAll();
             } else if (action.equals(MUSIC_ID)) {
                 mediaId = intent.getIntExtra("mediaId", -1);
@@ -514,9 +552,53 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 setupEqualizer(mediaId);
                 setupAudioView();
                 renderScriptBackground();
+            }else if(action.equals(LYRIC_TIME)){//获取歌词现在播放哪首歌
+
+            }
+        }
+    }
+
+    //即时更新歌词
+    private void updateLyricByTime() {
+        if(lyricView.getVisibility() == View.VISIBLE && hasLyric){
+            lyricHandler.sendEmptyMessage(1);
+        }
+    }
+
+    //更新歌词内容
+    private void updateLyric() {
+        if(lyricsProcess == null)
+            lyricsProcess = new LyricsProcess();
+        lyricsProcess.readLRC(musics.get(position).getPath());
+        System.out.println("music path :" + musics.get(position).getPath());
+        lrclist = lyricsProcess.getLrclist();
+        if(lrclist.size() > 0)
+            hasLyric = true;
+        else
+            hasLyric = false;
+        lyricView.setmLrcList(lrclist);
+        lyricView.startAnimation(AnimationUtils.loadAnimation(this, R.anim.alpha_lrc));
+    }
+
+    //获取歌词显示的索引值
+    public int lrcIndex(){
+        if(currentTime < duration){
+
+            if(lyricIndex == 0  && currentTime < lrclist.get(lyricIndex).getLrcTime())
+                lyricIndex = 0;
+
+            if(lyricIndex == lrclist.size()-1 &&
+                    currentTime > lrclist.get(lyricIndex).getLrcTime())
+                lyricIndex = lrclist.size()-1;
+
+            if(lyricIndex < lrclist.size()-1 &&
+                    currentTime > lrclist.get(lyricIndex+1).getLrcTime()) {
+                lyricIndex++;
             }
 
+
         }
+        return lyricIndex;
     }
 }
 

@@ -48,6 +48,7 @@ public class MusicService extends Service{
     public static final String MUSIC_CURRENT = "action.MUSIC_CURRENT";//当前音乐播放时间动作
     public static final String MUSIC_DURATION = "action.MUSIC_DURATION";//新音乐长度更新动作
     public static final String MUSIC_ID = "anction.MUSIC_ID";
+    public static final String LYRIC_TIME = "action.LYRIC_TIME";
 
     private Handler handler = new Handler(){
 
@@ -60,7 +61,7 @@ public class MusicService extends Service{
                     intent.putExtra("currentTime" , currentTime);
                     intent.setAction(MUSIC_CURRENT);
                     sendBroadcast(intent);
-                    handler.sendEmptyMessageDelayed(1, 1000);
+                    handler.sendEmptyMessageDelayed(1, 200);
                 }
             }
         }
@@ -75,8 +76,6 @@ public class MusicService extends Service{
 
         preferences = getSharedPreferences("musicPreference", MODE_WORLD_READABLE);
         editor = preferences.edit();
-        editor.putInt("id", id);
-        editor.commit();
 
         Intent intent =new Intent();
         intent.setAction(MUSIC_ID);
@@ -103,7 +102,7 @@ public class MusicService extends Service{
                     path = musics.get(current).getPath();
                     play(0);
                 }else if(status == 3){//随机播放
-                    current = getRandomSong(musics.size()-1);
+                    current = getRandomSong(musics.size());
                     Intent sendIntent = new Intent(UPDATE_ACTION);
                     sendIntent.putExtra("current", current);
                     sendBroadcast(sendIntent);
@@ -135,7 +134,7 @@ public class MusicService extends Service{
     public void onStart(Intent intent, int startId) {
 
         path = intent.getStringExtra("path");
-        current = intent.getIntExtra("position", -1);
+        current = intent.getIntExtra("position", 0);
         msg = intent.getIntExtra("MSG", 0);
         System.out.println("position : " + current +  " path is : " + path +" MSG : " + msg);
         if (msg == Constant.PLAY_MSG) {
@@ -170,6 +169,14 @@ public class MusicService extends Service{
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    //传递currentTime过去让Activity_2更新
+    private void sendLRCMessageToActivity_2() {
+        Intent intent = new Intent(this, Activity_2.class);
+        intent.putExtra("current", current);
+        intent.setAction(LYRIC_TIME);
+        sendBroadcast(intent);
     }
 
     private void pause() {
