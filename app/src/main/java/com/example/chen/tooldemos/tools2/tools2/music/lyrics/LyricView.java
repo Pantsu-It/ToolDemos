@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -73,18 +74,22 @@ public class LyricView extends TextView {
         notCurrentPaint.setTextSize(textSize);
         notCurrentPaint.setTypeface(Typeface.DEFAULT);
 
+
         try{
             setText("");
             //画当前歌词
-            canvas.drawText(mLrcList.get(index).getLrcStr() , width/2 , height/2, currentPaint);
+            StringBuffer nowlyric = new StringBuffer(mLrcList.get(index).getLrcStr());
+
+            canvas.drawText(nowlyric.toString() , width/2 , height/2, currentPaint);
 
             float tempY = height/2;
 
             //画出当前歌词之前的歌词
             for (int i = index -1; i >= 0; i--){
                 tempY = tempY - textHeight;
-                if(tempY > textHeight)
+                if(tempY > textHeight){
                     canvas.drawText(mLrcList.get(i).getLrcStr() , width/2 , tempY , notCurrentPaint);
+                }
             }
 
             tempY = height/2;
@@ -98,8 +103,13 @@ public class LyricView extends TextView {
 
         }catch(Exception e){
             setText("...木有歌词文件，赶紧去下载...");
+            setGravity(Gravity.CENTER_HORIZONTAL);
         }
 
+    }
+
+    //居中
+    public void setLayout(){
     }
 
 

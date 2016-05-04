@@ -21,9 +21,9 @@ import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.example.chen.tooldemos.R;
@@ -86,8 +86,8 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private RelativeLayout coverBackground;
     private LyricView lyricView;
     private LinearLayout background;
-    private TextView playBtn, nextBtn, previousBtn, modeBtn, listBtn;
-    private SeekBar musicProgress;
+    private ImageView playBtn, nextBtn, previousBtn, modeBtn, listBtn;
+    private MySeekBar musicProgress;
     private TextView tv_current, tv_duration, tv_musictitle;
 
 
@@ -152,12 +152,12 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         coverBackground = (RelativeLayout) findViewById(R.id.layout_audioAndlyrics);
         lyricView = (LyricView) findViewById(R.id.tv_lyrics);
         background = (LinearLayout) findViewById(R.id.layout_activity);
-        listBtn = (TextView) findViewById(R.id.btn_list);
-        modeBtn = (TextView) findViewById(R.id.btn_mode);
-        playBtn = (TextView) findViewById(R.id.btn_play);
-        nextBtn = (TextView) findViewById(R.id.btn_next);
-        previousBtn = (TextView) findViewById(R.id.btn_previous);
-        musicProgress = (SeekBar) findViewById(R.id.sb_musicbar);
+        listBtn = (ImageView) findViewById(R.id.btn_list);
+        modeBtn = (ImageView) findViewById(R.id.btn_mode);
+        playBtn = (ImageView) findViewById(R.id.btn_play);
+        nextBtn = (ImageView) findViewById(R.id.btn_next);
+        previousBtn = (ImageView) findViewById(R.id.btn_previous);
+        musicProgress = (MySeekBar) findViewById(R.id.sb_musicbar);
         tv_current = (TextView) findViewById(R.id.tv_current);
         tv_duration = (TextView) findViewById(R.id.tv_duration);
         tv_musictitle = (TextView) findViewById(R.id.tv_title);
@@ -379,14 +379,14 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         Intent intent = new Intent(this, MusicService.class);
         if (!isPlaying) {
             isPlaying = true;
-            playBtn.setBackgroundResource(R.drawable.pause_btn_pressed);
+            playBtn.setImageResource(R.drawable.btn_pause_slector);
             mAudioView.setPlaying(true);
             intent.putExtra("MSG", Constant.CONTINUE_MSG);
             startService(intent);
             System.out.println(" this is isplaying");
         } else {
             isPlaying = false;
-            playBtn.setBackgroundResource(R.drawable.play_btn_pressed);
+            playBtn.setImageResource(R.drawable.btn_play_slector);
             mAudioView.setPlaying(false);
             intent.putExtra("MSG", Constant.PAUSE_MSG);
             startService(intent);
@@ -415,13 +415,13 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     private void changeBtnApparence() {
         switch (songModeNum) {
             case 1:
-                modeBtn.setBackgroundResource(R.drawable.one_btn);
+                modeBtn.setImageResource(R.drawable.one_btn);
                 break;
             case 2:
-                modeBtn.setBackgroundResource(R.drawable.repeat_btn_pressed);
+                modeBtn.setImageResource(R.drawable.repeat_btn);
                 break;
             case 3:
-                modeBtn.setBackgroundResource(R.drawable.shuffle_btn_pressed);
+                modeBtn.setImageResource(R.drawable.shuffle_btn);
                 break;
         }
     }
@@ -442,18 +442,20 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     //下一首歌
     private void nextMusic() {
         isPlaying = true;
-        playBtn.setBackgroundResource(R.drawable.pause_btn_pressed);
+        playBtn.setImageResource(R.drawable.btn_pause_slector);
 
         switch (songModeNum) {
             case 2:
-                position++;
+                if (position > musics.size() - 1)
+                    position = 0;
+                else
+                    position++;
                 break;
             case 3:
                 position = getRandomIndex(musics.size());
                 break;
         }
-        if (position > musics.size() - 1)
-            position = 0;
+
 
         sendMessageToService(Constant.NEXT_MSG);
         updateAll();
@@ -462,19 +464,20 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     //上一首歌
     private void previousMusic() {
         isPlaying = true;
-        playBtn.setBackgroundResource(R.drawable.pause_btn_pressed);
+        playBtn.setImageResource(R.drawable.btn_pause_slector);
+
 
         switch (songModeNum) {
             case 2:
-                position--;
+                if(position > 0)
+                    position--;
+                else
+                    position = musics.size()-1;
                 break;
             case 3:
                 position = getRandomIndex(musics.size());
                 break;
         }
-
-        if (position < 0)
-            position = musics.size() - 1;
 
         sendMessageToService(Constant.PREVIOUS_MSG);
 
@@ -490,7 +493,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     //监听并回应list中的点击事件
     public void clickMusicToService(int id) {
         position = id;
-        playBtn.setBackgroundResource(R.drawable.pause_btn_pressed);
+        playBtn.setImageResource(R.drawable.btn_pause_slector);
 
         mAudioView.setPlaying(false);
         //发送position让service点歌
@@ -514,6 +517,8 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     }
 
     public void updateAll() {
+        //更改判断关系
+        isPlaying = true;
         //封面变更
         Music music = musics.get(position);
         mAudioView.setCover(music);

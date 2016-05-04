@@ -35,13 +35,14 @@
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:textSize="20sp"
-            android:id="@+id/tv_title"/>
+            android:id="@+id/tv_title"
+            android:textColor="#cccccc"/>
     </RelativeLayout>
 
     <LinearLayout
 
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="24dp"
         android:orientation="horizontal"
         android:gravity="center_horizontal">
 
@@ -52,12 +53,13 @@
             android:layout_weight="1"
             android:text="lala"
             android:gravity="center_horizontal|fill_vertical"
-            android:textSize="20px"/>
+            android:textSize="20px"
+            android:textColor="#DDDDDD"/>
 
         <com.example.chen.tooldemos.tools2.tools2.MySeekBar
             android:layout_weight="8"
             android:layout_width="0dp"
-            android:layout_height="40dp"
+            android:layout_height="match_parent"
             android:id="@+id/sb_musicbar"
             android:indeterminate="false"
            />
@@ -69,7 +71,8 @@
             android:layout_weight="1"
             android:text="lala"
             android:gravity="center_horizontal|fill_vertical"
-            android:textSize="20px"/>
+            android:textSize="20px"
+            android:textColor="#bbbbbb"/>
 
 
     </LinearLayout>
@@ -78,47 +81,50 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_horizontal"
-        android:layout_marginBottom="5dp">
+        android:gravity="center_vertical">
 
-        <TextView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
             android:id="@+id/btn_mode"
-            android:background="@drawable/repeat_btn_pressed"
-            android:layout_marginRight="20dp"
-            android:layout_marginLeft="20dp"/>
-        <TextView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:src="@drawable/repeat_btn"
+            android:layout_marginRight="16dp"
+            />
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
             android:id="@+id/btn_previous"
-            android:background="@drawable/previous_btn"
-            android:layout_marginRight="20dp"
-            android:layout_marginLeft="20dp"/>
+            android:src="@drawable/btn_previous_slector"
+            android:layout_marginRight="16dp"
+            android:layout_marginLeft="16dp"/>
 
-        <TextView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+        <ImageView
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:padding="8dp"
             android:id="@+id/btn_play"
-            android:background="@drawable/pause_btn_pressed"
-            android:layout_marginRight="20dp"
-            android:layout_marginLeft="20dp"/>
+            android:src="@drawable/btn_pause_slector"
+            android:layout_marginRight="16dp"
+            android:layout_marginLeft="16dp"/>
 
-        <TextView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
             android:id="@+id/btn_next"
-            android:background="@drawable/next_btn"
-            android:layout_marginRight="20dp"
-            android:layout_marginLeft="20dp"/>
+            android:src="@drawable/btn_next_slector"
+            android:layout_marginRight="16dp"
+            android:layout_marginLeft="16dp"/>
 
-        <TextView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
             android:id="@+id/btn_list"
-            android:background="@drawable/list_btn"
-            android:layout_marginRight="20dp"
-            android:layout_marginLeft="20dp"/>
+            android:src="@drawable/btn_list"
+            android:layout_marginLeft="16dp"/>
 
 
     </LinearLayout>

@@ -133,8 +133,8 @@ public class MusicService extends Service{
     @Override
     public void onStart(Intent intent, int startId) {
 
-        path = intent.getStringExtra("path");
         current = intent.getIntExtra("position", 0);
+        path = intent.getStringExtra("path");
         msg = intent.getIntExtra("MSG", 0);
         System.out.println("position : " + current +  " path is : " + path +" MSG : " + msg);
         if (msg == Constant.PLAY_MSG) {

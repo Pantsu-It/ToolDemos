@@ -3,8 +3,6 @@ package com.example.chen.tooldemos.tools2.tools2;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.PathEffect;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.widget.SeekBar;
@@ -61,15 +59,15 @@ public class MySeekBar extends SeekBar {
         float width = getWidth();
         float height = getHeight();
 
-        float lineStroke = height * 0.1f;
+        float lineStroke = height * 0.16f;
         float max = getMax();
         float rProgress = getProgress() / max;
         float rSecondaryProgress = getSecondaryProgress() / max;
 
-        float circleRatio = height * 0.2f;
+        float circleRatio = height * 0.4f;
         float strokeLength = width - 2 * circleRatio;
 
-        float startX = circleRatio / 2;
+        float startX = circleRatio *0.7f;
         float progressX = startX + strokeLength * rProgress;
         float secondaryProgressX = startX + strokeLength * rSecondaryProgress;
         float endX = width - circleRatio / 2;
