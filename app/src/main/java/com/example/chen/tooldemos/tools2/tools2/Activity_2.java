@@ -191,7 +191,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
         musicProgress.setProgress(currentTime);
         musicProgress.setMax((int) duration);
-
+        musicProgress.setEnabled(false);
         musicProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {

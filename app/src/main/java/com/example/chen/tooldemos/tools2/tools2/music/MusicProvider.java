@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
@@ -112,7 +113,7 @@ public class MusicProvider {
             //根据options参数，减少所需要的内存
             bm = BitmapFactory.decodeFileDescriptor(fd, null, options);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Log.d("debug", "Album of music file not found!");
         }
         return bm;
     }

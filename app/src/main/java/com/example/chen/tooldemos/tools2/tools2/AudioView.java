@@ -253,7 +253,7 @@ public class AudioView extends RelativeLayout {
         }
         averagepinlv = (tmpavgpinlv + heavyrecord * 2f) / 128 * 1.0f;
         if (averagepinlv > valley + 5f) {
-            Log.d("averagepinlv", String.format("averagepinlv: %f valley + x: %f", averagepinlv, valley + 5));
+//            Log.d("averagepinlv", String.format("averagepinlv: %f valley + x: %f", averagepinlv, valley + 5));
             valley = averagepinlv;
             beatIt();
         } else if (averagepinlv < valley) {
