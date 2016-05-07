@@ -65,7 +65,7 @@ public class AudioView extends RelativeLayout {
     private RectF rect = new RectF(), rectLinesCrop = new RectF();
     private RectF rectInner = new RectF(), rectA = new RectF(), rectB = new RectF();
 
-    private int color_border_a = 0x19ffffff, color_border_b = 0x99777777;
+    private int color_border_a = 0x19ffffff, color_border_b = 0x99666666;
 
     private BorderInner mBorderInner;
     private BorderOuter mBorderOuter;
@@ -73,7 +73,6 @@ public class AudioView extends RelativeLayout {
     private Cover mCover;
 
 
-    // static???
     Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -204,7 +203,6 @@ public class AudioView extends RelativeLayout {
         float targetWidth = rectInner.width();
         float targetHeight = targetWidth;
         bitmap = ImageUtil.getClipedBitmap(bitmap, targetWidth, targetHeight, false);
-
 //        // 裁剪为正方形图片
 //        if (bitmap.getWidth() >= bitmap.getHeight()) {
 //            bitmap = Bitmap.createBitmap(bitmap, (width - height) / 2, 0, height, height, matrix, true);

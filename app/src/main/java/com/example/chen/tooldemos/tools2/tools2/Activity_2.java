@@ -16,7 +16,6 @@ import android.media.AudioManager;
 import android.media.audiofx.Equalizer;
 import android.media.audiofx.Visualizer;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -26,7 +25,6 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -89,7 +87,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     // 界面按钮
     private RelativeLayout coverBackground;
     private LyricView lyricView;
-    private LinearLayout background;
+    private ImageView background;
     private ImageView playBtn, nextBtn, previousBtn, modeBtn, listBtn;
     private MySeekBar musicProgress;
     private TextView tv_current, tv_duration, tv_musictitle;
@@ -111,7 +109,6 @@ public class Activity_2 extends Activity implements View.OnClickListener {
             switch (what) {
                 case 0:
                     musicContainer.setVisibility(View.GONE);
-                    background.requestLayout();
                     break;
             }
         }
@@ -153,9 +150,9 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
     //初始化组件
     private void init() {
-        coverBackground = (RelativeLayout) findViewById(R.id.layout_audioAndlyrics);
+        coverBackground = (RelativeLayout) findViewById(R.id.layout_audioAndLyric);
         lyricView = (LyricView) findViewById(R.id.tv_lyrics);
-        background = (LinearLayout) findViewById(R.id.layout_activity);
+        background = (ImageView) findViewById(R.id.background);
         listBtn = (ImageView) findViewById(R.id.btn_list);
         modeBtn = (ImageView) findViewById(R.id.btn_mode);
         playBtn = (ImageView) findViewById(R.id.btn_play);
@@ -166,7 +163,6 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         tv_duration = (TextView) findViewById(R.id.tv_duration);
         tv_musictitle = (TextView) findViewById(R.id.tv_title);
         myPlayerRecevier = new PlayerReceiver();
-
 
         musicProvider = new MusicProvider(this);
         musics = (ArrayList<Music>) musicProvider.getList();
@@ -180,6 +176,8 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         modeBtn.setOnClickListener(this);
         listBtn.setOnClickListener(this);
         coverBackground.setOnClickListener(this);
+
+        background.setColorFilter(0x66666666);
 
         preferences = getSharedPreferences("musicPreference", MODE_WORLD_READABLE);
         editor = preferences.edit();
@@ -354,7 +352,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 System.out.println("Animation is coming");
                 openListAnimation();
                 break;
-            case R.id.layout_audioAndlyrics:
+            case R.id.layout_audioAndLyric:
                 System.out.println("Animation disappear is coming");
                 disappearAudioViewAndLyricsAppear();
                 break;
@@ -403,7 +401,6 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         if (!isAppear) {
             isAppear = true;
             musicContainer.setVisibility(View.VISIBLE);
-            background.requestLayout();
             Animation anim = AnimationUtils.loadAnimation(this, R.anim.list_appear);
             musicContainer.startAnimation(anim);
         } else {
@@ -531,17 +528,14 @@ public class Activity_2 extends Activity implements View.OnClickListener {
             protected Bitmap doInBackground(Object... params) {
                 position = (int) params[1];
                 Bitmap bitmap1 = ImageUtil.getMutedBitmap(Activity_2.this, (Bitmap) params[0]);
-                Bitmap bitmap2 = ImageUtil.getDarkerBitmap(bitmap1, false);
-                Bitmap bitmap3 = ImageUtil.getClipedBitmap(bitmap2, mMetrics.widthPixels, mMetrics.heightPixels, false);
-                return bitmap3;
+                Bitmap bitmap2 = ImageUtil.getClipedBitmap(bitmap1, mMetrics.widthPixels, mMetrics.heightPixels, false);
+                return bitmap2;
             }
 
             @Override
             protected void onPostExecute(Bitmap bitmap) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    if (background.getTag(R.id.background_cover_position) == position) {
-                        background.setBackground(new BitmapDrawable(getResources(), bitmap));
-                    }
+                if (background.getTag(R.id.background_cover_position) == position) {
+                    background.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
                 }
             }
         }.execute(mAudioView.mCoverBitmap, position);

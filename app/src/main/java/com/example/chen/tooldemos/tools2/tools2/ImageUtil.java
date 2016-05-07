@@ -287,11 +287,6 @@ public class ImageUtil {
         return (bitmap);
     }
 
-    public static Bitmap getDarkerBitmap(Bitmap srcBitmap, boolean applyInBitmap) {
-        return srcBitmap;
-    }
-
-
     public static Bitmap getClipedBitmap(Bitmap srcBitmap, float clipWidth, float clipHeight, boolean applyInBitmap) {
         Bitmap bitmap;
         if (applyInBitmap) {
