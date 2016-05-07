@@ -201,22 +201,17 @@ public class AudioView extends RelativeLayout {
     Bitmap mCoverBitmap;
 
     private void setCover(Bitmap bitmap) {
-        int width = bitmap.getWidth();
-        int height = bitmap.getHeight();
         float targetWidth = rectInner.width();
         float targetHeight = targetWidth;
-        float sX = targetWidth / width;
-        float sY = targetHeight / height;
-        Matrix matrix = new Matrix();
-        float scale = Math.max(sX, sY);
-        matrix.postScale(scale, scale);
+        bitmap = ImageUtil.getClipedBitmap(bitmap, targetWidth, targetHeight, false);
 
-        // 裁剪为正方形图片
-        if (bitmap.getWidth() >= bitmap.getHeight()) {
-            bitmap = Bitmap.createBitmap(bitmap, (width - height) / 2, 0, height, height, matrix, true);
-        } else {
-            bitmap = Bitmap.createBitmap(bitmap, 0, (height - width) / 2, width, width, matrix, true);
-        }
+//        // 裁剪为正方形图片
+//        if (bitmap.getWidth() >= bitmap.getHeight()) {
+//            bitmap = Bitmap.createBitmap(bitmap, (width - height) / 2, 0, height, height, matrix, true);
+//        } else {
+//            bitmap = Bitmap.createBitmap(bitmap, 0, (height - width) / 2, width, width, matrix, true);
+//        }
+
         // 裁剪为圆型图片
         RoundedBitmapDrawable
                 roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(getResources(), bitmap);

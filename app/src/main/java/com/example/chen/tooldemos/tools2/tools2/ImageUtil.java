@@ -292,7 +292,7 @@ public class ImageUtil {
     }
 
 
-    public static Bitmap getClipedBitmap(Bitmap srcBitmap, int clipWidth, int clipcHeight, boolean applyInBitmap) {
+    public static Bitmap getClipedBitmap(Bitmap srcBitmap, float clipWidth, float clipHeight, boolean applyInBitmap) {
         Bitmap bitmap;
         if (applyInBitmap) {
             bitmap = srcBitmap;
@@ -303,15 +303,17 @@ public class ImageUtil {
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
         float sX = clipWidth / width;
-        float sY = clipcHeight / height;
+        float sY = clipHeight / height;
         Matrix matrix = new Matrix();
         float scale = Math.max(sX, sY);
         matrix.postScale(scale, scale);
 
-        if (bitmap.getWidth() >= bitmap.getHeight()) {
-            bitmap = Bitmap.createBitmap(bitmap, (width - height) / 2, 0, height, height, matrix, true);
+        if (sY >= sX) {
+//            bitmap = Bitmap.createBitmap(bitmap, (int) ((width - clipWidth * sY) / 2), 0, (int) (clipWidth * sY), (int) (clipHeight * sY), matrix, true);
+            bitmap = Bitmap.createBitmap(bitmap, (int) ((width - clipWidth / sY) / 2), 0, (int) (clipWidth / sY), height, matrix, true);
         } else {
-            bitmap = Bitmap.createBitmap(bitmap, 0, (height - width) / 2, width, width, matrix, true);
+//            bitmap = Bitmap.createBitmap(bitmap, 0, (int) ((height - clipHeight * sX) / 2), (int) (clipWidth * sX), (int) (clipHeight * sX), matrix, true);
+            bitmap = Bitmap.createBitmap(bitmap, 0, (int) ((height - clipHeight / sX) / 2), width, (int) (clipHeight / sX), matrix, true);
         }
 
         return bitmap;

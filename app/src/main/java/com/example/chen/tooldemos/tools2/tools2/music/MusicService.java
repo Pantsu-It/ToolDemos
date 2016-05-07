@@ -41,7 +41,7 @@ public class MusicService extends Service{
 
     private int currentTime;//当前歌曲播放进度
 
-    private MyReceiver myReceiver;
+    private MyReceiver mReceiver;
 
     public static final String UPDATE_ACTION = "action.UPDATE_ACTION";//更新动作
     public static final String CTL_ACTION = "action.CTL_ACTION";//控制动作
@@ -111,10 +111,10 @@ public class MusicService extends Service{
                 }
             }
         });
-        myReceiver = new MyReceiver();
+        mReceiver = new MyReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Activity_2.CTL_ACTION);
-        registerReceiver(myReceiver, filter);
+        registerReceiver(mReceiver, filter);
 
 
     }
@@ -226,6 +226,7 @@ public class MusicService extends Service{
             musicPlayer.release();
             musicPlayer = null;
         }
+        unregisterReceiver(mReceiver);
 
         editor.putInt("currentTime", currentTime);
         editor.putString("path",path);
