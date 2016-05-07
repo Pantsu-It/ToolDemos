@@ -65,7 +65,7 @@ public class AudioView extends RelativeLayout {
     private RectF rect = new RectF(), rectLinesCrop = new RectF();
     private RectF rectInner = new RectF(), rectA = new RectF(), rectB = new RectF();
 
-    private int color_border_a = 0x99888888, color_border_b = 0x99666666;
+    private int color_border_a = 0x19ffffff, color_border_b = 0x99777777;
 
     private BorderInner mBorderInner;
     private BorderOuter mBorderOuter;
@@ -226,10 +226,6 @@ public class AudioView extends RelativeLayout {
         mCoverBitmap = roundedBitmapDrawable.getBitmap();
     }
 
-    public void setMutedCoverBitmap(View view) {
-        ImageBlurUtil.getMutedCoverBitmap(mContext, mCoverBitmap, view);
-    }
-
     public void beatIt() {
         if (isPlaying()) {
             mHandler.sendEmptyMessage(0x1);
@@ -241,6 +237,37 @@ public class AudioView extends RelativeLayout {
     private static final float decadeRate = 0.84f;
 
     private float valley;
+
+    public void updateVisualizer(float[] fftForm) {
+        lineLengthRate = 2.5f;
+
+        float averagepinlv;
+        float tmpavgpinlv = 0;
+        float heavyrecord = 0;
+        for (int i = 0; i < lineSize; ++i) {
+            float decade = (byte) (bytes[i] * decadeRate);
+            if (fftForm[i] > decade) {
+                bytes[i] = fftForm[i];
+            } else {
+                bytes[i] = decade;
+            }
+
+            tmpavgpinlv += fftForm[i];
+        }
+        for (int i = 0; i < 32; i += 2) {
+            heavyrecord += fftForm[i];
+        }
+        averagepinlv = (tmpavgpinlv + heavyrecord * 2f) / 128 * 1.0f;
+        if (averagepinlv > valley + 5f) {
+            Log.d("averagepinlv", String.format("averagepinlv: %f valley + x: %f", averagepinlv, valley + 5));
+            valley = averagepinlv;
+            beatIt();
+        } else if (averagepinlv < valley) {
+            valley = averagepinlv;
+        }
+
+        mFFTLines.invalidate();
+    }
 
     public void updateVisualizer2(byte[] wave) {
         lineLengthRate = lineLengthMax / 128f;
@@ -277,35 +304,6 @@ public class AudioView extends RelativeLayout {
         mFFTLines.invalidate();
     }
 
-
-    public void updateVisualizer(float[] fftForm) {
-        lineLengthRate = 2;
-
-        float averagepinlv;
-        float tmpavgpinlv = 0;
-        float heavyrecord = (fftForm[0]+fftForm[1]+fftForm[2]) * 10;
-        for (int i = 0; i < lineSize; ++i) {
-            float decade = (byte) (bytes[i] * decadeRate);
-            if (fftForm[i] > decade) {
-                bytes[i] = fftForm[i];
-            } else {
-                bytes[i] = decade;
-            }
-
-            tmpavgpinlv += fftForm[i];
-        }
-        averagepinlv = tmpavgpinlv / 128 * 1.0f;
-        if (averagepinlv > valley + 3.2f) {
-            Log.d("averagepinlv", String.format("averagepinlv: %f valley + x: %f", averagepinlv, valley + 5));
-            valley = averagepinlv;
-            beatIt();
-        } else if (averagepinlv < valley) {
-            valley = averagepinlv;
-        }
-
-        mFFTLines.invalidate();
-    }
-
     public int getRequestSize() {
         return lineSize;
     }
@@ -322,6 +320,16 @@ public class AudioView extends RelativeLayout {
 
     public boolean isPlaying() {
         return playing;
+    }
+
+    // No calling?
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(0xffa6b522);
+        canvas.drawOval(rectLinesCrop, paint);
     }
 
     class FFTLines extends View {
@@ -346,7 +354,6 @@ public class AudioView extends RelativeLayout {
             paint.setStyle(Paint.Style.STROKE);
             paint.setColor(color_line);
             paint.setStrokeWidth(lineWidth);
-
             for (int i = 0; i < lineSize; ++i) {
                 path.reset();
                 path.moveTo(rectLinesCrop.left, rectLinesCrop.centerY());

@@ -20,34 +20,30 @@ import java.io.ByteArrayOutputStream;
 /**
  * Created by Pants on 2016/5/2.
  */
-public class ImageBlurUtil {
+public class ImageUtil {
 
-    public static void getMutedCoverBitmap(Context context, Bitmap src, View view) {
+    public static Bitmap getMutedBitmap(Context context, Bitmap srcBitmap) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            Bitmap mutedBitmap = doBlur(src, 30, false);
-            view.setBackground(new BitmapDrawable(context.getResources(), mutedBitmap));
+            return doBlur(srcBitmap, 30, false);
         } else {
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inSampleSize = 40;
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            src.compress(Bitmap.CompressFormat.JPEG, 20, out);
+            srcBitmap.compress(Bitmap.CompressFormat.JPEG, 20, out);
             ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-            Bitmap bitmap = BitmapFactory.decodeStream(in, null, options);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                view.setBackground(new BitmapDrawable(context.getResources(), bitmap));
-            }
+            return BitmapFactory.decodeStream(in, null, options);
         }
-
-//        blur(context, src, view);
     }
 
+    /*
+        Scaling bitmap to smaller before doBlur() will be more efficient~
+    */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    private static void blur(Context context, Bitmap bkg, View view) {
+    private static Bitmap blur(Bitmap srcBitmap, View view) {
         long startMs = System.currentTimeMillis();
         float scaleFactor = 1;
         float radius = 20;
         scaleFactor = 8;
-        radius = 2;
 
         Bitmap overlay = Bitmap.createBitmap((int) (view.getMeasuredWidth() / scaleFactor),
                 (int) (view.getMeasuredHeight() / scaleFactor), Bitmap.Config.ARGB_8888);
@@ -56,42 +52,40 @@ public class ImageBlurUtil {
         canvas.scale(1 / scaleFactor, 1 / scaleFactor);
         Paint paint = new Paint();
         paint.setFlags(Paint.FILTER_BITMAP_FLAG);
-        canvas.drawBitmap(bkg, 0, 0, paint);
+        canvas.drawBitmap(srcBitmap, 0, 0, paint);
 
-        overlay = FastBlur.doBlur(overlay, (int) radius, true);
-        Bitmap bitmap = Bitmap.createScaledBitmap(overlay, view.getMeasuredWidth(), view.getMeasuredHeight(), true);
-        view.setBackground(new BitmapDrawable(context.getResources(), bitmap));
+        overlay = doBlur(overlay, (int) radius, true);
+        return Bitmap.createScaledBitmap(overlay, view.getMeasuredWidth(), view.getMeasuredHeight(), true);
     }
 
-//        @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-//        private static Bitmap blur (Context context, Bitmap bkg,int width, int height, float radius)
-//        {
-//            Bitmap overlay = Bitmap.createBitmap(width / 2, height / 2, Bitmap.Config.ARGB_8888);
-//            Canvas canvas = new Canvas(overlay);
-//            canvas.drawBitmap(bkg, 0, 0, null);
-//            RenderScript rs = RenderScript.create(context);
-//            Allocation overlayAlloc = Allocation.createFromBitmap(rs, overlay);
-//            ScriptIntrinsicBlur blur = ScriptIntrinsicBlur.create(rs, overlayAlloc.getElement());
-//            blur.setInput(overlayAlloc);
-//            blur.setRadius(radius);
-//            blur.forEach(overlayAlloc);
-//            overlayAlloc.copyTo(overlay);
-//            rs.destroy();
-//            return overlay;
-//        }
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    private static Bitmap blur(Context context, Bitmap srcBitmap, int width, int height, float radius) {
+        Bitmap overlay = Bitmap.createBitmap(width / 2, height / 2, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(overlay);
+        canvas.drawBitmap(srcBitmap, 0, 0, null);
+        RenderScript rs = RenderScript.create(context);
+        Allocation overlayAlloc = Allocation.createFromBitmap(rs, overlay);
+        ScriptIntrinsicBlur blur = ScriptIntrinsicBlur.create(rs, overlayAlloc.getElement());
+        blur.setInput(overlayAlloc);
+        blur.setRadius(radius);
+        blur.forEach(overlayAlloc);
+        overlayAlloc.copyTo(overlay);
+        rs.destroy();
+        return overlay;
+    }
 
 
     /**
      * Created by paveld on 3/6/14.
      */
 
-    public static Bitmap doBlur(Bitmap sentBitmap, int radius,
-                                boolean canReuseInBitmap) {
+    public static Bitmap doBlur(Bitmap srcBitmap, int radius,
+                                boolean applyInBitmap) {
         Bitmap bitmap;
-        if (canReuseInBitmap) {
-            bitmap = sentBitmap;
+        if (applyInBitmap) {
+            bitmap = srcBitmap;
         } else {
-            bitmap = sentBitmap.copy(sentBitmap.getConfig(), true);
+            bitmap = srcBitmap.copy(srcBitmap.getConfig(), true);
         }
 
         if (radius < 1) {
@@ -293,4 +287,33 @@ public class ImageBlurUtil {
         return (bitmap);
     }
 
+    public static Bitmap getDarkerBitmap(Bitmap srcBitmap, boolean applyInBitmap) {
+        return srcBitmap;
+    }
+
+
+    public static Bitmap getClipedBitmap(Bitmap srcBitmap, int clipWidth, int clipcHeight, boolean applyInBitmap) {
+        Bitmap bitmap;
+        if (applyInBitmap) {
+            bitmap = srcBitmap;
+        } else {
+            bitmap = srcBitmap.copy(srcBitmap.getConfig(), true);
+        }
+
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        float sX = clipWidth / width;
+        float sY = clipcHeight / height;
+        Matrix matrix = new Matrix();
+        float scale = Math.max(sX, sY);
+        matrix.postScale(scale, scale);
+
+        if (bitmap.getWidth() >= bitmap.getHeight()) {
+            bitmap = Bitmap.createBitmap(bitmap, (width - height) / 2, 0, height, height, matrix, true);
+        } else {
+            bitmap = Bitmap.createBitmap(bitmap, 0, (height - width) / 2, width, width, matrix, true);
+        }
+
+        return bitmap;
+    }
 }

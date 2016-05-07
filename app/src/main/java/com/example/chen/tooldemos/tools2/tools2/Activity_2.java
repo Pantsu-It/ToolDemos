@@ -10,9 +10,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.AudioManager;
 import android.media.audiofx.Equalizer;
 import android.media.audiofx.Visualizer;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -113,10 +117,10 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         }
     };
 
-    Handler lyricHandler = new Handler(){
+    Handler lyricHandler = new Handler() {
 
         @Override
-        public void handleMessage(Message msg){
+        public void handleMessage(Message msg) {
             lyricView.setIndex(lrcIndex());
             lyricView.invalidate();
         }
@@ -229,7 +233,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
             public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
                 updateVisualizer(fft);
             }
-        }, Visualizer.getMaxCaptureRate()/2, true, true);
+        }, Visualizer.getMaxCaptureRate() / 2, true, true);
         mVisualizer.setEnabled(true);
     }
 
@@ -359,18 +363,18 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
     //消失audioView并出现歌词
     private void disappearAudioViewAndLyricsAppear() {
-        if(!isLyricsAppear){
-            ObjectAnimator anim = ObjectAnimator.ofFloat(mAudioView,"alpha",mAudioView.getAlpha(),0);
+        if (!isLyricsAppear) {
+            ObjectAnimator anim = ObjectAnimator.ofFloat(mAudioView, "alpha", mAudioView.getAlpha(), 0);
             anim.start();
-            ObjectAnimator anim1 = ObjectAnimator.ofFloat(lyricView, "alpha", lyricView.getAlpha(),1);
+            ObjectAnimator anim1 = ObjectAnimator.ofFloat(lyricView, "alpha", lyricView.getAlpha(), 1);
             anim1.start();
             isLyricsAppear = true;
-        }else{
-            ObjectAnimator anim = ObjectAnimator.ofFloat(mAudioView,"alpha",mAudioView.getAlpha(),1);
+        } else {
+            ObjectAnimator anim = ObjectAnimator.ofFloat(mAudioView, "alpha", mAudioView.getAlpha(), 1);
             anim.start();
-            ObjectAnimator anim1 = ObjectAnimator.ofFloat(lyricView, "alpha", lyricView.getAlpha(),0);
+            ObjectAnimator anim1 = ObjectAnimator.ofFloat(lyricView, "alpha", lyricView.getAlpha(), 0);
             anim1.start();
-            isLyricsAppear =false;
+            isLyricsAppear = false;
         }
     }
 
@@ -446,7 +450,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
         switch (songModeNum) {
             case 2:
-                if (position > musics.size() - 1)
+                if (position + 1 > musics.size() - 1)
                     position = 0;
                 else
                     position++;
@@ -469,10 +473,10 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
         switch (songModeNum) {
             case 2:
-                if(position > 0)
+                if (position > 0)
                     position--;
                 else
-                    position = musics.size()-1;
+                    position = musics.size() - 1;
                 break;
             case 3:
                 position = getRandomIndex(musics.size());
@@ -513,7 +517,34 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     }
 
     public void renderScriptBackground() {
-        mAudioView.setMutedCoverBitmap(background);
+        background.setTag(R.id.background_cover_position, position);
+        new AsyncTask<Object, Void, Bitmap>() {
+
+            int position;
+
+            @Override
+            protected void onPreExecute() {
+
+            }
+
+            @Override
+            protected Bitmap doInBackground(Object... params) {
+                position = (int) params[1];
+                Bitmap bitmap1 = ImageUtil.getMutedBitmap(Activity_2.this, (Bitmap) params[0]);
+                Bitmap bitmap2 = ImageUtil.getDarkerBitmap(bitmap1, false);
+                Bitmap bitmap3 = ImageUtil.getClipedBitmap(bitmap2, mMetrics.widthPixels, mMetrics.heightPixels, false);
+                return bitmap3;
+            }
+
+            @Override
+            protected void onPostExecute(Bitmap bitmap) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    if (background.getTag(R.id.background_cover_position) == position) {
+                        background.setBackground(new BitmapDrawable(getResources(), bitmap));
+                    }
+                }
+            }
+        }.execute(mAudioView.mCoverBitmap, position);
     }
 
     public void updateAll() {
@@ -557,7 +588,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 setupEqualizer(mediaId);
                 setupAudioView();
                 renderScriptBackground();
-            }else if(action.equals(LYRIC_TIME)){//获取歌词现在播放哪首歌
+            } else if (action.equals(LYRIC_TIME)) {//获取歌词现在播放哪首歌
 
             }
         }
@@ -565,19 +596,19 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
     //即时更新歌词
     private void updateLyricByTime() {
-        if(lyricView.getVisibility() == View.VISIBLE && hasLyric){
+        if (lyricView.getVisibility() == View.VISIBLE && hasLyric) {
             lyricHandler.sendEmptyMessage(1);
         }
     }
 
     //更新歌词内容
     private void updateLyric() {
-        if(lyricsProcess == null)
+        if (lyricsProcess == null)
             lyricsProcess = new LyricsProcess();
         lyricsProcess.readLRC(musics.get(position).getPath());
         System.out.println("music path :" + musics.get(position).getPath());
         lrclist = lyricsProcess.getLrclist();
-        if(lrclist.size() > 0)
+        if (lrclist.size() > 0)
             hasLyric = true;
         else
             hasLyric = false;
@@ -586,18 +617,18 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     }
 
     //获取歌词显示的索引值
-    public int lrcIndex(){
-        if(currentTime < duration){
+    public int lrcIndex() {
+        if (currentTime < duration) {
 
-            if(lyricIndex == 0  && currentTime < lrclist.get(lyricIndex).getLrcTime())
+            if (lyricIndex == 0 && currentTime < lrclist.get(lyricIndex).getLrcTime())
                 lyricIndex = 0;
 
-            if(lyricIndex == lrclist.size()-1 &&
+            if (lyricIndex == lrclist.size() - 1 &&
                     currentTime > lrclist.get(lyricIndex).getLrcTime())
-                lyricIndex = lrclist.size()-1;
+                lyricIndex = lrclist.size() - 1;
 
-            if(lyricIndex < lrclist.size()-1 &&
-                    currentTime > lrclist.get(lyricIndex+1).getLrcTime()) {
+            if (lyricIndex < lrclist.size() - 1 &&
+                    currentTime > lrclist.get(lyricIndex + 1).getLrcTime()) {
                 lyricIndex++;
             }
 
