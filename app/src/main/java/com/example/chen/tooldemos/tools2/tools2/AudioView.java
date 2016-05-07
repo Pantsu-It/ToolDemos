@@ -21,6 +21,7 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -179,7 +180,7 @@ public class AudioView extends RelativeLayout {
     }
 
     public void setDefaultCover() {
-        InputStream is = getResources().openRawResource(R.raw.music2);
+        InputStream is = getResources().openRawResource(R.raw.album_default);
         Bitmap bitmap = BitmapFactory.decodeStream(is);
         setCover(bitmap);
     }
@@ -253,9 +254,9 @@ public class AudioView extends RelativeLayout {
                 wave2[i] = 128 + wave[i];
         }
 
-        float heavyrecord = (wave2[2] * 1.2f + wave2[0] * 1.1f) / 2;
-        float tmpavgpinlv = 0;
         float averagepinlv;
+        float tmpavgpinlv = 0;
+        float heavyrecord = (wave2[2] * 1.2f + wave2[0] * 1.1f) / 2;
         for (int i = bytes.length - 1; i >= 0; i--) {
             if (i > 59)
                 tmpavgpinlv += wave2[i * 5];
@@ -280,7 +281,9 @@ public class AudioView extends RelativeLayout {
     public void updateVisualizer(float[] fftForm) {
         lineLengthRate = 2;
 
-        int beatCount = 0;
+        float averagepinlv;
+        float tmpavgpinlv = 0;
+        float heavyrecord = (fftForm[0]+fftForm[1]+fftForm[2]) * 10;
         for (int i = 0; i < lineSize; ++i) {
             float decade = (byte) (bytes[i] * decadeRate);
             if (fftForm[i] > decade) {
@@ -288,12 +291,16 @@ public class AudioView extends RelativeLayout {
             } else {
                 bytes[i] = decade;
             }
-            if (fftForm[i] > 5) {
-                ++beatCount;
-            }
+
+            tmpavgpinlv += fftForm[i];
         }
-        if (beatCount > lineSize / 4) {
+        averagepinlv = tmpavgpinlv / 128 * 1.0f;
+        if (averagepinlv > valley + 3.2f) {
+            Log.d("averagepinlv", String.format("averagepinlv: %f valley + x: %f", averagepinlv, valley + 5));
+            valley = averagepinlv;
             beatIt();
+        } else if (averagepinlv < valley) {
+            valley = averagepinlv;
         }
 
         mFFTLines.invalidate();

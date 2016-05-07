@@ -494,8 +494,8 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     public void clickMusicToService(int id) {
         position = id;
         playBtn.setImageResource(R.drawable.btn_pause_slector);
+        mAudioView.setPlaying(true);
 
-        mAudioView.setPlaying(false);
         //发送position让service点歌
         sendMessageToService(Constant.NEXT_MSG);
         updateAll();

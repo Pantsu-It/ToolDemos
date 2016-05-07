@@ -67,7 +67,7 @@ public class MySeekBar extends SeekBar {
         float circleRatio = height * 0.4f;
         float strokeLength = width - 2 * circleRatio;
 
-        float startX = circleRatio *0.7f;
+        float startX = circleRatio;
         float progressX = startX + strokeLength * rProgress;
         float secondaryProgressX = startX + strokeLength * rSecondaryProgress;
         float endX = width - circleRatio / 2;
