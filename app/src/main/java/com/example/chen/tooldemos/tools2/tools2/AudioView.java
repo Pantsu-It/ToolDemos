@@ -19,6 +19,7 @@ import android.os.Message;
 import android.renderscript.ScriptIntrinsicBlur;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.support.v4.widget.Space;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -313,16 +314,6 @@ public class AudioView extends RelativeLayout {
 
     public boolean isPlaying() {
         return playing;
-    }
-
-    // No calling?
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-        paint.setStyle(Paint.Style.FILL);
-        paint.setColor(0xffa6b522);
-        canvas.drawOval(rectLinesCrop, paint);
     }
 
     class FFTLines extends View {
