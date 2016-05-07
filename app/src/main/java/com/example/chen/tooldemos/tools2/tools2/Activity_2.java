@@ -632,7 +632,13 @@ public class Activity_2 extends Activity implements View.OnClickListener {
     public int lrcIndex() {
         if (currentTime < duration) {
 
-            if (lyricIndex == 0 && currentTime < lrclist.get(lyricIndex).getLrcTime())
+            if(lrclist.size() == 0)
+            {
+                lyricIndex=0;
+                return lyricIndex;
+            }
+
+            if (lyricIndex == 0  && currentTime < lrclist.get(lyricIndex).getLrcTime())
                 lyricIndex = 0;
 
             if (lyricIndex == lrclist.size() - 1 &&
