@@ -10,6 +10,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorMatrix;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -17,6 +19,8 @@ import android.graphics.RectF;
 import android.os.Handler;
 import android.os.Message;
 import android.renderscript.ScriptIntrinsicBlur;
+import android.support.annotation.ColorInt;
+import android.support.v4.graphics.ColorUtils;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.widget.Space;
@@ -37,6 +41,7 @@ import com.example.chen.tooldemos.tools2.tools2.music.MusicProvider;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -66,7 +71,7 @@ public class AudioView extends RelativeLayout {
     private RectF rect = new RectF(), rectLinesCrop = new RectF();
     private RectF rectInner = new RectF(), rectA = new RectF(), rectB = new RectF();
 
-    private int color_border_a = 0x19ffffff, color_border_b = 0x99666666;
+    private int color_border_a = 0x29ffffff, color_border_b = 0x99666666;
 
     private BorderInner mBorderInner;
     private BorderOuter mBorderOuter;
@@ -204,13 +209,6 @@ public class AudioView extends RelativeLayout {
         float targetWidth = rectInner.width();
         float targetHeight = targetWidth;
         bitmap = ImageUtil.getClipedBitmap(bitmap, targetWidth, targetHeight, false);
-//        // 裁剪为正方形图片
-//        if (bitmap.getWidth() >= bitmap.getHeight()) {
-//            bitmap = Bitmap.createBitmap(bitmap, (width - height) / 2, 0, height, height, matrix, true);
-//        } else {
-//            bitmap = Bitmap.createBitmap(bitmap, 0, (height - width) / 2, width, width, matrix, true);
-//        }
-
         // 裁剪为圆型图片
         RoundedBitmapDrawable
                 roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
@@ -253,7 +251,6 @@ public class AudioView extends RelativeLayout {
         }
         averagepinlv = (tmpavgpinlv + heavyrecord * 2f) / 128 * 1.0f;
         if (averagepinlv > valley + 5f) {
-//            Log.d("averagepinlv", String.format("averagepinlv: %f valley + x: %f", averagepinlv, valley + 5));
             valley = averagepinlv;
             beatIt();
         } else if (averagepinlv < valley) {
@@ -319,10 +316,18 @@ public class AudioView extends RelativeLayout {
     class FFTLines extends View {
 
         int[] colors = {
-                0xff4e72b8, 0xff905a3d, 0xffa3cf62, 0xff9b95c9
+                Color.rgb(174, 116, 153),
+                Color.rgb(158, 176, 120),
+                Color.rgb(163, 128, 178),
+                0xff4e72b8,
+                0xff9b95c9,
+                0xff83af42,
+                Color.rgb(158, 178, 238),
+                0xff905a3d,
         };
         int current_color_index = 0;
-        int color_line = colors[0];
+        int color_line = 0xff4e72b8;
+        Random colorRandom = new Random();
 
         public FFTLines(Context context) {
             super(context);
@@ -355,10 +360,17 @@ public class AudioView extends RelativeLayout {
         }
 
         private static final long duration = 1000;
-        private static final float minAlpha = 0.3f;
+        private static final float minAlpha = 0.4f;
         ObjectAnimator alphaAnim;
 
         public void changeColor() {
+//            int r = colorRandom.nextInt(50) + 176;
+//            int g = colorRandom.nextInt(80) + 136;
+//            int b = colorRandom.nextInt(90) + 136;
+//            int color = Color.rgb(r, g, b);
+//            color_line = color;
+
+//            color_line = colors[6];
             color_line = colors[++current_color_index % colors.length];
         }
 
