@@ -246,10 +246,10 @@ public class AudioView extends RelativeLayout {
 
             tmpavgpinlv += fftForm[i];
         }
-        for (int i = 0; i < 32; i += 2) {
+        for (int i = 0; i < 24; i += 2) {
             heavyrecord += fftForm[i];
         }
-        averagepinlv = (tmpavgpinlv + heavyrecord * 2f) / 128 * 1.0f;
+        averagepinlv = (tmpavgpinlv + heavyrecord * 2.2f) / 128 * 1.0f;
         if (averagepinlv > valley + 5f) {
             valley = averagepinlv;
             beatIt();

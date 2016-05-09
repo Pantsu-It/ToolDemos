@@ -41,7 +41,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:layout_centerHorizontal="true"
-                android:textColor="#cccccc"
+                android:textColor="#fafafa"
                 android:textSize="20sp" />
         </RelativeLayout>
 
@@ -58,8 +58,8 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center_horizontal|fill_vertical"
-                android:text="lala"
-                android:textColor="#DDDDDD"
+                android:text="00:00"
+                android:textColor="#f4f4f4"
                 android:textSize="20px" />
 
             <com.example.chen.tooldemos.tools2.tools2.MySeekBar
@@ -75,8 +75,8 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center_horizontal|fill_vertical"
-                android:text="lala"
-                android:textColor="#bbbbbb"
+                android:text="00:00"
+                android:textColor="#d2d2d2"
                 android:textSize="20px" />
 
 
