@@ -168,8 +168,8 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         musicProvider = new MusicProvider(this);
         musics = (ArrayList<Music>) musicProvider.getList();
         musicContainer = (MusicListViewContainer) findViewById(R.id.container);
-        musicContainer.addMusicProvider(musicProvider);
-        musicContainer.inputMusicListView();
+        musicContainer.init();
+        musicContainer.setMusicList(musics);
 
         playBtn.setOnClickListener(this);
         nextBtn.setOnClickListener(this);
