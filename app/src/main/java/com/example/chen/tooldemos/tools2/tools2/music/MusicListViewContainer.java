@@ -107,7 +107,6 @@ public class MusicListViewContainer extends LinearLayout {
                     changeSelectedView((Integer) textView.getTag(R.id.music_position));
 
                     ((Activity_2) mContext).clickMusicToService(songNum);
-
                 }
             });
             return new MyViewHolder(textView);
