@@ -7,7 +7,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.renderscript.Allocation;
 import android.renderscript.RenderScript;
@@ -287,13 +286,8 @@ public class ImageUtil {
         return (bitmap);
     }
 
-    public static Bitmap getClipedBitmap(Bitmap srcBitmap, float clipWidth, float clipHeight, boolean applyInBitmap) {
-        Bitmap bitmap;
-        if (applyInBitmap) {
-            bitmap = srcBitmap;
-        } else {
-            bitmap = srcBitmap.copy(srcBitmap.getConfig(), true);
-        }
+    public static Bitmap getClipedBitmap(Bitmap srcBitmap, float clipWidth, float clipHeight) {
+        Bitmap bitmap = srcBitmap.copy(srcBitmap.getConfig(), true);
 
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
@@ -304,10 +298,8 @@ public class ImageUtil {
         matrix.postScale(scale, scale);
 
         if (sY >= sX) {
-//            bitmap = Bitmap.createBitmap(bitmap, (int) ((width - clipWidth * sY) / 2), 0, (int) (clipWidth * sY), (int) (clipHeight * sY), matrix, true);
             bitmap = Bitmap.createBitmap(bitmap, (int) ((width - clipWidth / sY) / 2), 0, (int) (clipWidth / sY), height, matrix, true);
         } else {
-//            bitmap = Bitmap.createBitmap(bitmap, 0, (int) ((height - clipHeight * sX) / 2), (int) (clipWidth * sX), (int) (clipHeight * sX), matrix, true);
             bitmap = Bitmap.createBitmap(bitmap, 0, (int) ((height - clipHeight / sX) / 2), width, (int) (clipHeight / sX), matrix, true);
         }
 

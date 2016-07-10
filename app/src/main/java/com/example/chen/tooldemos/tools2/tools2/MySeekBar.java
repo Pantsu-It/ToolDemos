@@ -52,10 +52,19 @@ public class MySeekBar extends SeekBar {
         super.setProgress(progress);
     }
 
+
+    @Override
+    protected synchronized void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
-//        super.onDraw(canvas);
-
         float width = getWidth();
         float height = getHeight();
 
@@ -64,23 +73,23 @@ public class MySeekBar extends SeekBar {
         float rProgress = getProgress() / max;
         float rSecondaryProgress = getSecondaryProgress() / max;
 
-        float circleRatio = height * 0.4f;
+        float circleRatio = height * 0.5f;
         float strokeLength = width - 2 * circleRatio;
 
         float startX = circleRatio;
         float progressX = startX + strokeLength * rProgress;
         float secondaryProgressX = startX + strokeLength * rSecondaryProgress;
-        float endX = width - circleRatio / 2;
+        float endX = width - circleRatio;
         float lineY = height / 2;
 
         paint.setStrokeWidth(lineStroke);
         paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setStrokeJoin(Paint.Join.ROUND);
 
+        paint.setColor(colorBack);
+        canvas.drawLine(startX, lineY, endX, lineY, paint);
         paint.setColor(colorSecondary);
         canvas.drawLine(startX, lineY, secondaryProgressX, lineY, paint);
-        paint.setColor(colorBack);
-        canvas.drawLine(secondaryProgressX, lineY, endX, lineY, paint);
         paint.setColor(colorPrimary);
         canvas.drawLine(startX, lineY, progressX, lineY, paint);
         paint.setColor(0xffffffff);
