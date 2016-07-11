@@ -530,7 +530,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
             protected Bitmap doInBackground(Object... params) {
                 position = (int) params[1];
                 Bitmap bitmap1 = ImageUtil.getMutedBitmap(Activity_2.this, (Bitmap) params[0]);
-                Bitmap bitmap2 = ImageUtil.getClipedBitmap(bitmap1, mMetrics.widthPixels, mMetrics.heightPixels, false);
+                Bitmap bitmap2 = ImageUtil.getClipedBitmap(bitmap1, mMetrics.widthPixels, mMetrics.heightPixels);
                 return bitmap2;
             }
 

@@ -208,7 +208,7 @@ public class AudioView extends RelativeLayout {
     private void setCover(Bitmap bitmap) {
         float targetWidth = rectInner.width();
         float targetHeight = targetWidth;
-        bitmap = ImageUtil.getClipedBitmap(bitmap, targetWidth, targetHeight, false);
+        bitmap = ImageUtil.getClipedBitmap(bitmap, targetWidth, targetHeight);
         // 裁剪为圆型图片
         RoundedBitmapDrawable
                 roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
