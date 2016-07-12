@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.os.Build;
 import android.renderscript.Allocation;
 import android.renderscript.RenderScript;
@@ -20,6 +21,15 @@ import java.io.ByteArrayOutputStream;
  * Created by Pants on 2016/5/2.
  */
 public class ImageUtil {
+
+    public static Bitmap createDarkBitmap(Bitmap src) {
+        Bitmap bitmap = src.copy(Bitmap.Config.ARGB_8888, true);
+        Paint paint = new Paint();
+        paint.setColor(0xa0202020);
+        RectF rect = new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        new Canvas(bitmap).drawRoundRect(rect, 4, 4, paint);
+        return bitmap;
+    }
 
     public static Bitmap getMutedBitmap(Context context, Bitmap srcBitmap) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1) {
