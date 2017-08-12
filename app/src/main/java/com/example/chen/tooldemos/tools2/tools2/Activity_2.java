@@ -206,7 +206,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         intent.setClass(this, MusicService.class);
         startService(intent);
 
-        System.out.println("Service Start!!");
+        Log.d("foobar", "Service Start!!");
     }
 
     private void setupAudioView() {
@@ -351,11 +351,11 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 changeBtnApparence();
                 break;
             case R.id.btn_list:
-                System.out.println("Animation is coming");
+                Log.d("foobar", "Animation is coming");
                 openListAnimation();
                 break;
             case R.id.layout_audioAndLyric:
-                System.out.println("Animation disappear is coming");
+                Log.d("foobar", "Animation disappear is coming");
                 disappearAudioViewAndLyricsAppear();
                 break;
         }
@@ -387,14 +387,14 @@ public class Activity_2 extends Activity implements View.OnClickListener {
             mAudioView.setPlaying(true);
             intent.putExtra("MSG", Constant.CONTINUE_MSG);
             startService(intent);
-            System.out.println(" this is isplaying");
+            Log.d("foobar", " this is isplaying");
         } else {
             isPlaying = false;
             playBtn.setImageResource(R.drawable.btn_play_slector);
             mAudioView.setPlaying(false);
             intent.putExtra("MSG", Constant.PAUSE_MSG);
             startService(intent);
-            System.out.println(" this is !!!!isplaying");
+            Log.d("foobar", " this is !!!!isplaying");
         }
     }
 
@@ -536,7 +536,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
 
             @Override
             protected void onPostExecute(Bitmap bitmap) {
-                if (background.getTag(R.id.background_cover_position) == position) {
+                if (background.getTag(R.id.background_cover_position).equals(position)) {
                     background.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
                 }
             }
@@ -579,7 +579,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
                 updateAll();
             } else if (action.equals(MUSIC_ID)) {
                 mediaId = intent.getIntExtra("mediaId", -1);
-                System.out.println(mediaId + "***********id is " + mediaId);
+                Log.d("foobar", mediaId + "***********id is " + mediaId);
                 setupVisualizer(mediaId);
                 setupEqualizer(mediaId);
                 setupAudioView();
@@ -602,7 +602,7 @@ public class Activity_2 extends Activity implements View.OnClickListener {
         if (lyricsProcess == null)
             lyricsProcess = new LyricsProcess();
         lyricsProcess.readLRC(musics.get(position).getPath());
-        System.out.println("music path :" + musics.get(position).getPath());
+        Log.d("foobar", "music path :" + musics.get(position).getPath());
         lrclist = lyricsProcess.getLrclist();
         if (lrclist.size() > 0)
             hasLyric = true;
